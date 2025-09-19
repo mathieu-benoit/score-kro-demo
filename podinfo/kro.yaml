@@ -1,0 +1,19 @@
+apiVersion: kro.run/v1alpha1
+kind: Podinfo
+metadata:
+  name: podinfo-app
+  namespace: default
+spec:
+  name:       podinfo-app
+  namespace:  podinfo-app
+  replicas:   2
+  image:           ghcr.io/stefanprodan/podinfo:6.9.2
+
+  uiColor:    "#8B8000"
+  backendURL: "http://backend-podinfo:9898/echo"
+
+  createHTTPRoute: false
+  hostname:        podinfo-app.localhost
+  routePath:       /
+  gatewayName:     default
+

@@ -38,4 +38,15 @@ spec:
         from: All
 EOF
 
-# FIXME - Add Kro here
+# --- Install kro v0.4.1 (pinned version) ---
+KRO_VERSION="0.4.1"
+
+helm install kro oci://ghcr.io/kro-run/kro/kro \
+  --namespace kro \
+  --create-namespace \
+  --version "${KRO_VERSION}"
+
+kubectl rollout status -n kro deploy/kro --timeout=120s
+
+
+echo "✅ Setup complete: Gateway API, NGINX Gateway Fabric, and kro v${KRO_VERSION} are installed."

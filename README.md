@@ -7,8 +7,8 @@
 First:
 - [x] DevContainer with Docker, Kind, Score pre-installed
 - [x] Kind cluster setup in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
-- [ ] TODO-Install Kro in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh) --> Artem
-- [ ] TODO-Define the Workload `ResourceGraphDefinition` (no cloud provider to start) --> Artem
+- [x] Install Kro in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
+- [x] Define the Workload `ResourceGraphDefinition`
 - [ ] TODO-Score file and patchers --> Mathieu
 - [ ] TODO-In-cluster provisioners --> Mathieu
 
@@ -23,6 +23,10 @@ score-k8s generate podinfo/score.yaml --image ghcr.io/stefanprodan/podinfo:lates
 ./scripts/setup-kind-cluster.sh
 
 kubectl apply -f manifests.yaml
+
+# Kro part
+kubectl apply -f kro/kro-rgd-podinfo.yaml
+kubectl apply -f podinfo/kro.yaml
 ```
 
 Second:
