@@ -7,7 +7,7 @@
 First:
 - [x] DevContainer with Docker, Kind, Score pre-installed
 - [x] Kind cluster setup in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
-- [ ] TODO-Install Kro --> Artem
+- [ ] TODO-Install Kro in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh) --> Artem
 - [ ] TODO-Define the Workload `ResourceGraphDefinition` (no cloud provider to start) --> Artem
 - [ ] TODO-Score file and patchers --> Mathieu
 - [ ] TODO-In-cluster provisioners --> Mathieu
