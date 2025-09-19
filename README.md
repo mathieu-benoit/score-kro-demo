@@ -7,13 +7,14 @@
 First:
 - [x] DevContainer with Docker, Kind, Score pre-installed
 - [x] Kind cluster setup in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
-- [ ] Install Kro
-- [ ] Define Workload (no cloud provider to start)
-- [ ] Score file and patchers
-- [ ] In-cluster provisioners
+- [ ] TODO-Install Kro --> Artem
+- [ ] TODO-Define the Workload `ResourceGraphDefinition` (no cloud provider to start) --> Artem
+- [ ] TODO-Score file and patchers --> Mathieu
+- [ ] TODO-In-cluster provisioners --> Mathieu
 
 --> Objective: be able to deploy `podinfo` via Score and Kro, with env vars.
 
+Rough script for the "first demo":
 ```bash
 score-k8s init ...
 
@@ -27,6 +28,7 @@ kubectl apply -f manifests.yaml
 Second:
 - [ ] Find a more complex sample apps: OnlineBoutique (with Redis)?
 - [ ] Get this sample apps working with Kro via Score
+- [ ] With in-cluster Redis at this stage?
 
 Later:
 - [ ] GKE
