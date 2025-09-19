@@ -18,7 +18,7 @@ Rough script for the "first demo":
 ```bash
 score-k8s init ...
 
-score-k8s generate podinfo/score.yaml
+score-k8s generate podinfo/score.yaml --image ghcr.io/stefanprodan/podinfo:latest
 
 ./scripts/setup-kind-cluster.sh
 
