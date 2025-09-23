@@ -26,7 +26,7 @@ kubectl apply -f manifests.yaml
 
 # Kro part
 kubectl apply -f kro/kro-rgd-podinfo.yaml
-kubectl apply -f podinfo/kro.yaml
+kubectl apply -f podinfo/kro-cr-podinfo.yaml
 ```
 
 Second:
@@ -39,3 +39,13 @@ Later:
 - [ ] CI/CD
 - [ ] GCP-KCC
 - [ ] Argo
+
+
+## Else
+
+- KRO limitations:
+    - CEL
+    - ARGS/Lists []
+    - Iterate over Objects, etc.
+    - DAY 2 Operation, Error Handling
+    - Depends on Operator - No Dry Run

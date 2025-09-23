@@ -9,7 +9,7 @@ spec:
     spec:
       name:            string  | required=true
       namespace:       string  | default="test"
-      replicas:        integer | default=2 minimum=1
+      replicas:        integer | default=2 minimum=1 maximum=50
       image:           string  | default="ghcr.io/stefanprodan/podinfo:6.9.2"
       imagePullPolicy: string  | default="IfNotPresent"
 
@@ -18,15 +18,42 @@ spec:
       backendURL:      string  | default="http://backend-podinfo:9898/echo"
 
       # Ports (scalars)
-      httpPort:        integer | default=9898
-      metricsPort:     integer | default=9797
-      grpcPort:        integer | default=9999
+      httpPort:        integer | default=9898 minimum=1 maximum=65535
+      metricsPort:     integer | default=9797 minimum=1 maximum=65535
+      grpcPort:        integer | default=9999 minimum=1 maximum=65535
 
       # Optional HTTPRoute (boolean + strings)
       createHTTPRoute: boolean | default=false
       hostname:        string  | required=false
       routePath:       string  | default="/"
       gatewayName:     string  | default="default"
+
+      # --- Security & resources knobs ---
+      automountSAToken:           boolean | default=false
+      readOnlyRootFilesystem:     boolean | default=true
+      allowPrivilegeEscalation:   boolean | default=false
+      runAsUser:                  integer | default=65532 minimum=1000
+      runAsGroup:                 integer | default=65532 minimum=1000
+      fsGroup:                    integer | default=65532 minimum=1
+
+      cpuRequest:                 string  | default="100m"
+      cpuLimit:                   string  | default="500m"
+      memoryRequest:              string  | default="128Mi"
+      memoryLimit:                string  | default="512Mi"
+
+      # HPA (autoscaling/v2)
+      enableHPA:                  boolean | default=true
+      minReplicas:                integer | default=2 minimum=1
+      maxReplicas:                integer | default=10 minimum=1
+      targetCPUUtilization:       integer | default=70 minimum=1 maximum=100
+      targetMemoryUtilization:    integer | default=80 minimum=1 maximum=100
+
+      # Optional add-ons
+      enableNetworkPolicy:        boolean | default=true
+      enablePDB:                  boolean | default=true
+      pdbMinAvailable:            string  | default="50%"
+
+      enableRbac:                 boolean | default=true
 
     status:
       deploymentConditions: ${deployment.status.conditions}
@@ -42,6 +69,55 @@ spec:
         kind: Namespace
         metadata:
           name: ${schema.spec.namespace}
+          # labels:
+          #   pod-security.kubernetes.io/enforce: "restricted"
+          #   pod-security.kubernetes.io/audit:    "baseline"
+          #   pod-security.kubernetes.io/warn:     "baseline"
+
+    - id: serviceAccount
+      template:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: ${schema.spec.name}-sa
+          namespace: ${appNamespace.metadata.name}
+        automountServiceAccountToken: ${schema.spec.automountSAToken}
+
+    # Create Role if enableRbac is true
+    - id: role
+      includeWhen:
+        - ${schema.spec.enableRbac}
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          name: ${schema.spec.name}-role
+          namespace: ${appNamespace.metadata.name}
+        rules:
+          - apiGroups: [""]
+            resources: ["pods", "services"]
+            verbs: ["get", "list"]
+          - apiGroups: ["apps"]
+            resources: ["deployments"]
+            verbs: ["get", "list", "watch"]
+   # Create RoleBinding if enableRbac is true
+    - id: roleBinding
+      includeWhen:
+        - ${schema.spec.enableRbac}
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        metadata:
+          name: ${schema.spec.name}-rb
+          namespace: ${appNamespace.metadata.name}
+        subjects:
+          - kind: ServiceAccount
+            name: ${serviceAccount.metadata.name}
+            namespace: ${appNamespace.metadata.name}
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: Role
+          name: ${schema.spec.name}-role}
 
     - id: deployment
       template:
@@ -68,8 +144,17 @@ spec:
                 app.kubernetes.io/name: ${schema.spec.name}
               annotations:
                 prometheus.io/scrape: "true"
-                prometheus.io/port:   ${string(schema.spec.httpPort)
+                prometheus.io/port:   ${string(schema.spec.httpPort)}
             spec:
+              serviceAccountName: ${serviceAccount.metadata.name}
+              automountServiceAccountToken: ${schema.spec.automountSAToken}
+              securityContext:
+                runAsNonRoot: true
+                runAsUser:  ${schema.spec.runAsUser}
+                runAsGroup: ${schema.spec.runAsGroup}
+                fsGroup:    ${schema.spec.fsGroup}
+                seccompProfile:
+                  type: RuntimeDefault
               volumes:
                 - name: data
                   emptyDir: {}
@@ -77,6 +162,11 @@ spec:
                 - name: podinfo
                   image: ${schema.spec.image}
                   imagePullPolicy: ${schema.spec.imagePullPolicy}
+                  securityContext:
+                    allowPrivilegeEscalation: ${schema.spec.allowPrivilegeEscalation}
+                    readOnlyRootFilesystem:   ${schema.spec.readOnlyRootFilesystem}
+                    capabilities:
+                      drop: ["ALL"]
                   command: ["./podinfo"]
                   args:
                     - --port=${schema.spec.httpPort}
@@ -104,27 +194,30 @@ spec:
                       protocol: TCP
                   resources:
                     requests:
-                      cpu: "1m"
-                      memory: "16Mi"
+                      cpu:    ${schema.spec.cpuRequest}
+                      memory: ${schema.spec.memoryRequest}
+                    limits:
+                      cpu:    ${schema.spec.cpuLimit}
+                      memory: ${schema.spec.memoryLimit}
                   volumeMounts:
                     - name: data
                       mountPath: /data
                   livenessProbe:
-                    exec:
-                      command: ["podcli","check","http","localhost:${schema.spec.httpPort}/healthz"]
-                    initialDelaySeconds: 1
+                    httpGet:
+                      path: /healthz
+                      port: ${schema.spec.httpPort}
+                    initialDelaySeconds: 3
                     periodSeconds: 10
                     timeoutSeconds: 5
                     failureThreshold: 3
-                    successThreshold: 1
                   readinessProbe:
-                    exec:
-                      command: ["podcli","check","http","localhost:${schema.spec.httpPort}/readyz"]
-                    initialDelaySeconds: 1
+                    httpGet:
+                      path: /readyz
+                      port: ${schema.spec.httpPort}
+                    initialDelaySeconds: 3
                     periodSeconds: 10
                     timeoutSeconds: 5
                     failureThreshold: 3
-                    successThreshold: 1
 
     - id: service
       template:
@@ -148,6 +241,74 @@ spec:
               port:       ${schema.spec.grpcPort}
               protocol:   TCP
               targetPort: grpc
+
+    - id: hpa
+      includeWhen:
+        - ${schema.spec.enableHPA}
+      template:
+        apiVersion: autoscaling/v2
+        kind: HorizontalPodAutoscaler
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${appNamespace.metadata.name}
+        spec:
+          scaleTargetRef:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: ${deployment.metadata.name}
+          minReplicas: ${schema.spec.minReplicas}
+          maxReplicas: ${schema.spec.maxReplicas}
+          metrics:
+            - type: Resource
+              resource:
+                name: cpu
+                target:
+                  type: Utilization
+                  averageUtilization: ${schema.spec.targetCPUUtilization}
+            - type: Resource
+              resource:
+                name: memory
+                target:
+                  type: Utilization
+                  averageUtilization: ${schema.spec.targetMemoryUtilization}
+
+    - id: netpol
+      includeWhen:
+        - ${schema.spec.enableNetworkPolicy}
+      template:
+        apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        metadata:
+          name: ${schema.spec.name}-default-deny-ingress
+          namespace: ${appNamespace.metadata.name}
+        spec:
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ${schema.spec.name}
+          policyTypes: ["Ingress","Egress"]
+          ingress:
+            - from:
+                - podSelector: {}   # adjust as needed
+              ports:
+                - protocol: TCP
+                  port: ${schema.spec.httpPort}
+          egress:
+            - {}  # allow all egress by default
+
+    - id: pdb
+      includeWhen:
+        - ${schema.spec.enablePDB}
+      template:
+        apiVersion: policy/v1
+        kind: PodDisruptionBudget
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${appNamespace.metadata.name}
+        spec:
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${schema.spec.name}
+          minAvailable: ${schema.spec.pdbMinAvailable}
 
     - id: httpRoute
       includeWhen:
