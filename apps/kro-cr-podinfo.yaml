@@ -1,0 +1,13 @@
+apiVersion: kro.run/v1alpha1
+kind: Podinfo
+metadata:
+  name: podinfo-app
+  namespace: default
+spec:
+  name:       podinfo-app
+  namespace:  podinfo-app
+  image:      ghcr.io/stefanprodan/podinfo:6.9.2
+  uiColor:    "#8B8000"
+
+  # Keep HTTPRoute off for now
+  createHTTPRoute: false

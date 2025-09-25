@@ -4,3 +4,5 @@ compose.yaml
 manifests.yaml
 
 .env
+
+.DS_Store
