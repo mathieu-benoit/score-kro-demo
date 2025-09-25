@@ -4,8 +4,8 @@ metadata:
   name: podinfo-app
   namespace: default
 spec:
-  name:       kro-podinfo-app
-  namespace:  kro-podinfo-app
+  name:       podinfo-app-kro
+  namespace:  podinfo-app-kro
   image:      ghcr.io/stefanprodan/podinfo:6.9.2
   uiColor:    "#8B8000"
 

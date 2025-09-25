@@ -4,7 +4,7 @@ kind: Namespace
 metadata:
     labels:
         app.kubernetes.io/managed-by: score-k8s
-    name: score-podinfo-app
+    name: podinfo-app-score
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -18,7 +18,7 @@ metadata:
         app.kubernetes.io/managed-by: score-k8s
         app.kubernetes.io/name: route-podinfo-workload-b331fd66
     name: route-podinfo-workload-b331fd66
-    namespace: score-podinfo-app
+    namespace: podinfo-app-score
 spec:
     hostnames:
         - dnsutpkyi.localhost
@@ -44,7 +44,7 @@ metadata:
         app.kubernetes.io/managed-by: score-k8s
         app.kubernetes.io/name: podinfo-workload
     name: podinfo-workload
-    namespace: score-podinfo-app
+    namespace: podinfo-app-score
 spec:
     ports:
         - name: www
@@ -67,7 +67,7 @@ metadata:
         app.kubernetes.io/managed-by: score-k8s
         app.kubernetes.io/name: podinfo-workload
     name: podinfo-workload
-    namespace: score-podinfo-app
+    namespace: podinfo-app-score
 spec:
     selector:
         matchLabels:
