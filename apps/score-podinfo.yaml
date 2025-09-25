@@ -11,7 +11,7 @@ metadata:
         app.kubernetes.io/managed-by: score-k8s
         app.kubernetes.io/name: route-podinfo-workload-b331fd66
     name: route-podinfo-workload-b331fd66
-    namespace: score-podinfo
+    namespace: score-podinfo-app
 spec:
     hostnames:
         - dnsutpkyi.localhost
@@ -37,7 +37,7 @@ metadata:
         app.kubernetes.io/managed-by: score-k8s
         app.kubernetes.io/name: podinfo-workload
     name: podinfo-workload
-    namespace: score-podinfo
+    namespace: score-podinfo-app
 spec:
     ports:
         - name: www
@@ -60,7 +60,7 @@ metadata:
         app.kubernetes.io/managed-by: score-k8s
         app.kubernetes.io/name: podinfo-workload
     name: podinfo-workload
-    namespace: score-podinfo
+    namespace: score-podinfo-app
 spec:
     selector:
         matchLabels:
