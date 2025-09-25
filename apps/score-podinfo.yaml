@@ -1,0 +1,88 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+    annotations:
+        k8s.score.dev/resource-guid: b331fd66-5052-434f-2f31-4de2a3b5adbf
+        k8s.score.dev/resource-uid: route.default#podinfo-workload.route
+        k8s.score.dev/source-workload: podinfo-workload
+    labels:
+        app.kubernetes.io/instance: route-podinfo-workload-b331fd66
+        app.kubernetes.io/managed-by: score-k8s
+        app.kubernetes.io/name: route-podinfo-workload-b331fd66
+    name: route-podinfo-workload-b331fd66
+    namespace: score-podinfo
+spec:
+    hostnames:
+        - dnsutpkyi.localhost
+    parentRefs:
+        - name: default
+    rules:
+        - backendRefs:
+            - name: podinfo-workload
+              port: 80
+          matches:
+            - path:
+                type: PathPrefix
+                value: /
+---
+apiVersion: v1
+kind: Service
+metadata:
+    annotations:
+        k8s.score.dev/workload-name: podinfo-workload
+    creationTimestamp: null
+    labels:
+        app.kubernetes.io/instance: podinfo-workload-4d06293a12
+        app.kubernetes.io/managed-by: score-k8s
+        app.kubernetes.io/name: podinfo-workload
+    name: podinfo-workload
+    namespace: score-podinfo
+spec:
+    ports:
+        - name: www
+          port: 80
+          protocol: TCP
+          targetPort: 9898
+    selector:
+        app.kubernetes.io/instance: podinfo-workload-4d06293a12
+status:
+    loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    annotations:
+        k8s.score.dev/workload-name: podinfo-workload
+    creationTimestamp: null
+    labels:
+        app.kubernetes.io/instance: podinfo-workload-4d06293a12
+        app.kubernetes.io/managed-by: score-k8s
+        app.kubernetes.io/name: podinfo-workload
+    name: podinfo-workload
+    namespace: score-podinfo
+spec:
+    selector:
+        matchLabels:
+            app.kubernetes.io/instance: podinfo-workload-4d06293a12
+    strategy: {}
+    template:
+        metadata:
+            annotations:
+                k8s.score.dev/workload-name: podinfo-workload
+                tags: website,ui,golang
+            creationTimestamp: null
+            labels:
+                app.kubernetes.io/instance: podinfo-workload-4d06293a12
+                app.kubernetes.io/managed-by: score-k8s
+                app.kubernetes.io/name: podinfo-workload
+        spec:
+            containers:
+                - env:
+                    - name: PODINFO_UI_COLOR
+                      value: '#34577c'
+                    - name: PODINFO_UI_MESSAGE
+                  image: ghcr.io/stefanprodan/podinfo:latest
+                  name: podinfo
+                  resources: {}
+status: {}
