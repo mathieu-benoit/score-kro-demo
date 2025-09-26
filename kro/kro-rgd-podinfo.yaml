@@ -1,23 +1,22 @@
 apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
-  name: podinfo-app
+  name: workload-app
 spec:
   schema:
     apiVersion: v1alpha1
-    kind: Podinfo
+    kind: Workload
     spec:
       name:            string  | required=true
       namespace:       string  | default="test"
       replicas:        integer | default=2 minimum=1 maximum=50
-      image:           string  | default="ghcr.io/stefanprodan/podinfo:6.9.2"
+      image:           string
       imagePullPolicy: string  | default="IfNotPresent"
 
-      # Env (scalars only)
-      uiColor:         string  | default="#34577c"
-      backendURL:      string  | default="http://backend-podinfo:9898/echo"
+      # Env
+      envConfigMapName: string | default="env-configmap"
 
-      # Ports (scalars)
+      # Ports (scalars) --> we'll find another way later
       httpPort:        integer | default=9898 minimum=1 maximum=65535
       metricsPort:     integer | default=9797 minimum=1 maximum=65535
       grpcPort:        integer | default=9999 minimum=1 maximum=65535
@@ -177,11 +176,9 @@ spec:
                     - --level=info
                     - --random-delay=false
                     - --random-error=false
-                  env:
-                    - name: PODINFO_UI_COLOR
-                      value: ${schema.spec.uiColor}
-                    - name: PODINFO_BACKEND_URL
-                      value: ${schema.spec.backendURL}
+                  envFrom:
+                    - configMapRef:
+                        name: ${schema.spec.envConfigMapName}
                   ports:
                     - name: http
                       containerPort: ${schema.spec.httpPort}
