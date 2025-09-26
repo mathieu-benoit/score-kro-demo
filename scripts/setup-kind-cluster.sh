@@ -13,6 +13,7 @@ nodes:
     protocol: TCP
 EOF
 
+# --- Install Gateway API + NGINX Gateway Fabric ---
 GATEWAY_API_VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/gateway-api/releases/latest | jq -r .tag_name)
 kubectl apply \
     -f https://github.com/kubernetes-sigs/gateway-api/releases/download/${GATEWAY_API_VERSION}/standard-install.yaml
@@ -39,9 +40,7 @@ spec:
         from: All
 EOF
 
-# =====================================================================
-#                       Metrics Server (for HPA)
-# =====================================================================
+# --- Install Metrics Server ---
 METRICS_SERVER_VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/metrics-server/releases/latest | jq -r .tag_name)
 
 kubectl apply -f "https://github.com/kubernetes-sigs/metrics-server/releases/download/${METRICS_SERVER_VERSION}/components.yaml"
@@ -62,13 +61,11 @@ helm install kro oci://ghcr.io/kro-run/kro/kro \
   --create-namespace \
   --version "${KRO_VERSION}"
 
-kubectl rollout status -n kro deploy/kro
-
-
-echo "✅ Setup complete: Gateway API, NGINX Gateway Fabric, and kro v${KRO_VERSION} are installed."
-
+echo "⏳ Waiting for kro to be ready..."
+echo "Kro successfully deployed"
 
 # Helm repo (argo) + pinned chart version
+echo "⏳ Installing Argo CD..."
 helm repo add argo https://argoproj.github.io/argo-helm >/dev/null
 helm repo update >/dev/null
 
@@ -81,21 +78,83 @@ helm install argocd argo/argo-cd \
   --version "${ARGOCD_CHART_VERSION}" \
   --set server.service.type=ClusterIP
 
-echo ""
-echo "✅ Setup complete:"
-echo "   - Argo CD installed (namespace: ${ARGOCD_NS}, chart: ${ARGOCD_CHART_VERSION})"
-echo ""
+kubectl rollout status -n "${ARGOCD_NS}" deploy/argocd-server --timeout=120s
 
-echo "🔐 Argo CD admin password:"
+kubectl apply -f - <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-kro
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: ./kro
+    repoURL: https://github.com/mathieu-benoit/score-kro-demo.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: true
+    retry:
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m0s
+      limit: 5
+    syncOptions:
+    - Validate=false
+    - PruneLast=true
+    - RespectIgnoreDifferences=true
+    - ServerSideApply=true
+    - Replace=true
+EOF
+
+kubectl apply -f - <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-of-apps
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    directory:
+      recurse: true
+    path: ./apps
+    repoURL: https://github.com/mathieu-benoit/score-kro-demo.git
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: true
+    retry:
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m0s
+      limit: 5
+    syncOptions:
+    - Validate=false
+    - PruneLast=true
+    - RespectIgnoreDifferences=true
+    - ServerSideApply=true
+    - Replace=true
+EOF
+
+echo "Successfully deployed Argo CD"
+echo ""
+echo "🔐 Argo CD user: admin and admin password:"
 kubectl -n "${ARGOCD_NS}" get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d && echo
 
-cat <<'TIP'
-
-To access the Argo CD UI locally:
-  kubectl -n argocd port-forward svc/argocd-server 8080:443
-Then open: https://localhost:8080
-Login:
-  username: admin
-  password: (printed above)
-
-TIP
+echo ""
+echo "✅ Setup complete: Gateway API, NGINX Gateway Fabric, Argo CD and kro are installed."
+echo ""
