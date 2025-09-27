@@ -12,6 +12,8 @@ spec:
       image:           string
       imagePullPolicy: string  | default="IfNotPresent"
 
+      command: "[]string"
+
       # Env
       envConfigMapName: string | default="env-configmap"
 
@@ -149,7 +151,7 @@ spec:
                     readOnlyRootFilesystem:   ${schema.spec.readOnlyRootFilesystem}
                     capabilities:
                       drop: ["ALL"]
-                  command: ["./podinfo"]
+                  command: ${schema.spec.command}
                   args:
                     - --port=${schema.spec.httpPort}
                     - --cert-path=/data/cert

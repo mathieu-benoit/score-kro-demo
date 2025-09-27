@@ -17,5 +17,8 @@ spec:
   image:      ghcr.io/stefanprodan/podinfo:6.9.2
   envConfigMapName: podinfo-env
 
+  command:
+    - "./podinfo"
+
   # Keep HTTPRoute off for now
   createHTTPRoute: false
