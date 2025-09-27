@@ -9,7 +9,7 @@ spec:
     spec:
       name:            string  | required=true
       replicas:        integer | default=2 minimum=1 maximum=50
-      image:           string
+      image:           string  | required=true
       imagePullPolicy: string  | default="IfNotPresent"
 
       command: "[]string"
