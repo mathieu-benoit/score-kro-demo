@@ -16,6 +16,11 @@ First:
 
 --> Objective: be able to deploy `podinfo` via Score and Kro, with env vars or args.
 
+Current limitations to see if we can solve (in Kro):
+- `args`
+- `command`
+- `ports`
+
 Rough script for the "first demo":
 ```bash
 
@@ -116,3 +121,4 @@ See next Demo 1.
     - Depends on Operator - No Dry Run
 
     - Use Same CR, but rename name, namespace -> Create a new application and don`t clean up the old one
+
