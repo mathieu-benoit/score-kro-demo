@@ -9,8 +9,10 @@ First:
 - [x] Kind cluster setup in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
 - [x] Install Kro in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
 - [x] Define the Workload `ResourceGraphDefinition`
-- [ ] TODO-Score file and patchers --> Mathieu
-- [ ] TODO-In-cluster provisioners --> Mathieu
+- [x] Argo setup
+- [ ] TODO-`score-k8s` setup --> Mathieu
+- [ ] In-cluster Redis
+- [ ] "Fake" KCC Memorystore (Redis)
 
 --> Objective: be able to deploy `podinfo` via Score and Kro, with env vars or args.
 
@@ -38,17 +40,6 @@ cp podinfo/kro-cr-podinfo.yaml apps/kro-cr-podinfo.yaml
 kubectl apply -f kro/kro-rgd-podinfo.yaml
 kubectl apply -f podinfo/kro-cr-podinfo.yaml
 ```
-
-Second:
-- [ ] Find a more complex sample apps: OnlineBoutique (with Redis)?
-- [ ] Get this sample apps working with Kro via Score
-- [ ] With in-cluster Redis at this stage?
-
-Later:
-- [ ] GKE
-- [ ] CI/CD
-- [ ] GCP-KCC
-- [ ] Argo
 
 
 ## Demo 0:
@@ -123,4 +114,5 @@ See next Demo 1.
     - Iterate over Objects, etc.
     - DAY 2 Operation, Error Handling
     - Depends on Operator - No Dry Run
+
     - Use Same CR, but rename name, namespace -> Create a new application and don`t clean up the old one
