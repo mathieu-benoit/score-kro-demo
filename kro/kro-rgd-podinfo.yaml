@@ -8,10 +8,12 @@ spec:
     kind: Workload
     spec:
       name:            string  | required=true
-      namespace:       string  | default="test"
       replicas:        integer | default=2 minimum=1 maximum=50
-      image:           string
+      image:           string  | required=true
       imagePullPolicy: string  | default="IfNotPresent"
+
+      command: "[]string"
+      args: "[]string"
 
       # Env
       envConfigMapName: string | default="env-configmap"
@@ -62,24 +64,12 @@ spec:
 
   resources:
 
-    - id: appNamespace
-      template:
-        apiVersion: v1
-        kind: Namespace
-        metadata:
-          name: ${schema.spec.namespace}
-          # labels:
-          #   pod-security.kubernetes.io/enforce: "restricted"
-          #   pod-security.kubernetes.io/audit:    "baseline"
-          #   pod-security.kubernetes.io/warn:     "baseline"
-
     - id: serviceAccount
       template:
         apiVersion: v1
         kind: ServiceAccount
         metadata:
           name: ${schema.spec.name}-sa
-          namespace: ${appNamespace.metadata.name}
         automountServiceAccountToken: ${schema.spec.automountSAToken}
 
     # Create Role if enableRbac is true
@@ -91,7 +81,6 @@ spec:
         kind: Role
         metadata:
           name: ${schema.spec.name}-role
-          namespace: ${appNamespace.metadata.name}
         rules:
           - apiGroups: [""]
             resources: ["pods", "services"]
@@ -108,11 +97,9 @@ spec:
         kind: RoleBinding
         metadata:
           name: ${schema.spec.name}-rb
-          namespace: ${appNamespace.metadata.name}
         subjects:
           - kind: ServiceAccount
             name: ${serviceAccount.metadata.name}
-            namespace: ${appNamespace.metadata.name}
         roleRef:
           apiGroup: rbac.authorization.k8s.io
           kind: Role
@@ -124,7 +111,6 @@ spec:
         kind: Deployment
         metadata:
           name:      ${schema.spec.name}
-          namespace: ${appNamespace.metadata.name}
           labels:
             app.kubernetes.io/name: ${schema.spec.name}
         spec:
@@ -166,16 +152,8 @@ spec:
                     readOnlyRootFilesystem:   ${schema.spec.readOnlyRootFilesystem}
                     capabilities:
                       drop: ["ALL"]
-                  command: ["./podinfo"]
-                  args:
-                    - --port=${schema.spec.httpPort}
-                    - --cert-path=/data/cert
-                    - --port-metrics=${schema.spec.metricsPort}
-                    - --grpc-port=${schema.spec.grpcPort}
-                    - --grpc-service-name=podinfo
-                    - --level=info
-                    - --random-delay=false
-                    - --random-error=false
+                  command: ${schema.spec.command}
+                  args: ${schema.spec.args}
                   envFrom:
                     - configMapRef:
                         name: ${schema.spec.envConfigMapName}
@@ -222,7 +200,6 @@ spec:
         kind: Service
         metadata:
           name:      ${schema.spec.name}
-          namespace: ${appNamespace.metadata.name}
           labels:
             app.kubernetes.io/name: ${schema.spec.name}
         spec:
@@ -247,7 +224,6 @@ spec:
         kind: HorizontalPodAutoscaler
         metadata:
           name: ${schema.spec.name}
-          namespace: ${appNamespace.metadata.name}
         spec:
           scaleTargetRef:
             apiVersion: apps/v1
@@ -277,7 +253,6 @@ spec:
         kind: NetworkPolicy
         metadata:
           name: ${schema.spec.name}-default-deny-ingress
-          namespace: ${appNamespace.metadata.name}
         spec:
           podSelector:
             matchLabels:
@@ -300,7 +275,6 @@ spec:
         kind: PodDisruptionBudget
         metadata:
           name: ${schema.spec.name}
-          namespace: ${appNamespace.metadata.name}
         spec:
           selector:
             matchLabels:
@@ -315,7 +289,6 @@ spec:
         kind: HTTPRoute
         metadata:
           name:      ${schema.spec.name}
-          namespace: ${appNamespace.metadata.name}
         spec:
           hostnames:
             - ${schema.spec.hostname}
