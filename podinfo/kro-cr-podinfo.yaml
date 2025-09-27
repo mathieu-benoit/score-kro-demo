@@ -18,7 +18,17 @@ spec:
   envConfigMapName: podinfo-env
 
   command:
-    - "./podinfo"
+    - ./podinfo
+
+  args:
+    - --port=9898
+    - --cert-path=/data/cert
+    - --port-metrics=9797
+    - --grpc-port=9999
+    - --grpc-service-name=podinfo
+    - --level=info
+    - --random-delay=false
+    - --random-error=false
 
   # Keep HTTPRoute off for now
   createHTTPRoute: false

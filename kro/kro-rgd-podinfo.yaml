@@ -13,6 +13,7 @@ spec:
       imagePullPolicy: string  | default="IfNotPresent"
 
       command: "[]string"
+      args: "[]string"
 
       # Env
       envConfigMapName: string | default="env-configmap"
@@ -152,15 +153,7 @@ spec:
                     capabilities:
                       drop: ["ALL"]
                   command: ${schema.spec.command}
-                  args:
-                    - --port=${schema.spec.httpPort}
-                    - --cert-path=/data/cert
-                    - --port-metrics=${schema.spec.metricsPort}
-                    - --grpc-port=${schema.spec.grpcPort}
-                    - --grpc-service-name=podinfo
-                    - --level=info
-                    - --random-delay=false
-                    - --random-error=false
+                  args: ${schema.spec.args}
                   envFrom:
                     - configMapRef:
                         name: ${schema.spec.envConfigMapName}
