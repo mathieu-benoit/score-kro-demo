@@ -15,14 +15,12 @@ spec:
       command: "[]string"
       args: "[]string"
 
-      # Env
-      envConfigMapName: string | default="env-configmap"
+      env: "[]envVar"
 
-      ports: "[]port | required=true"
+      ports: "[]port"
 
       # Ports (scalars) --> we'll find another way later
       httpPort:        integer | default=9898 minimum=1 maximum=65535
-      metricsPort:     integer | default=9797 minimum=1 maximum=65535
       grpcPort:        integer | default=9999 minimum=1 maximum=65535
 
       # Optional HTTPRoute (boolean + strings)
@@ -63,6 +61,9 @@ spec:
         name: string
         protocol: string
         containerPort: integer | required
+      envVar:
+        name: string
+        value: string
     
     status:
       deploymentConditions: ${deployment.status.conditions}
@@ -162,9 +163,7 @@ spec:
                       drop: ["ALL"]
                   command: ${schema.spec.command}
                   args: ${schema.spec.args}
-                  envFrom:
-                    - configMapRef:
-                        name: ${schema.spec.envConfigMapName}
+                  env: ${schema.spec.env}
                   ports: ${schema.spec.ports}
                   resources:
                     requests:
