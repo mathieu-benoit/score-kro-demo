@@ -13,13 +13,11 @@ metadata:
   name: podinfo-app
   namespace: test
 spec:
-  name:       podinfo-app-kro
-  image:      ghcr.io/stefanprodan/podinfo:6.9.2
+  name: podinfo-app-kro
+  image: ghcr.io/stefanprodan/podinfo:6.9.2
   envConfigMapName: podinfo-env
-
   command:
     - ./podinfo
-
   args:
     - --port=9898
     - --cert-path=/data/cert
@@ -29,6 +27,14 @@ spec:
     - --level=info
     - --random-delay=false
     - --random-error=false
-
-  # Keep HTTPRoute off for now
+  ports:
+    - name: http
+      containerPort: 9898
+      protocol: TCP
+    - name: http-metrics
+      containerPort: 9797
+      protocol: TCP
+    - name: grpc
+      containerPort: 9999
+      protocol: TCP
   createHTTPRoute: false
