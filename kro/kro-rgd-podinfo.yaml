@@ -19,6 +19,22 @@ spec:
 
       ports: "[]port"
 
+      livenessProbe:
+        httpGet: httpProbe
+        command: execProbe
+        initialDelaySeconds: integer | default=3
+        periodSeconds: integer | default=10
+        timeoutSeconds: integer | default=5
+        failureThreshold: integer | default=3
+      
+      readinessProbe:
+        httpGet: httpProbe
+        command: execProbe
+        initialDelaySeconds: integer | default=3
+        periodSeconds: integer | default=10
+        timeoutSeconds: integer | default=5
+        failureThreshold: integer | default=3
+
       # Ports (scalars) --> we'll find another way later
       httpPort:        integer | default=9898 minimum=1 maximum=65535
       grpcPort:        integer | default=9999 minimum=1 maximum=65535
@@ -59,11 +75,17 @@ spec:
     types:
       port:
         name: string
-        protocol: string
-        containerPort: integer | required
+        protocol: string | enum="TCP,UDP" default="TCP"
+        containerPort: integer | required=true minimum=1 maximum=65535
       envVar:
         name: string
         value: string
+      httpProbe:
+        port: integer | required=true minimum=1 maximum=65535
+        path: string | required=true
+        scheme: string | enum="HTTP,HTTPS" default="HTTP"
+      execProbe:
+        command: "[]string"
     
     status:
       deploymentConditions: ${deployment.status.conditions}
@@ -72,7 +94,6 @@ spec:
       routeParents:         ${httpRoute.status.parents}
 
   resources:
-
     - id: serviceAccount
       template:
         apiVersion: v1
@@ -80,40 +101,6 @@ spec:
         metadata:
           name: ${schema.spec.name}-sa
         automountServiceAccountToken: ${schema.spec.automountSAToken}
-
-    # Create Role if enableRbac is true
-    - id: role
-      includeWhen:
-        - ${schema.spec.enableRbac}
-      template:
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: Role
-        metadata:
-          name: ${schema.spec.name}-role
-        rules:
-          - apiGroups: [""]
-            resources: ["pods", "services"]
-            verbs: ["get", "list"]
-          - apiGroups: ["apps"]
-            resources: ["deployments"]
-            verbs: ["get", "list", "watch"]
-   # Create RoleBinding if enableRbac is true
-    - id: roleBinding
-      includeWhen:
-        - ${schema.spec.enableRbac}
-      template:
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: RoleBinding
-        metadata:
-          name: ${schema.spec.name}-rb
-        subjects:
-          - kind: ServiceAccount
-            name: ${serviceAccount.metadata.name}
-        roleRef:
-          apiGroup: rbac.authorization.k8s.io
-          kind: Role
-          name: ${schema.spec.name}-role}
-
     - id: deployment
       template:
         apiVersion: apps/v1
@@ -175,23 +162,8 @@ spec:
                   volumeMounts:
                     - name: data
                       mountPath: /data
-                  livenessProbe:
-                    httpGet:
-                      path: /healthz
-                      port: ${schema.spec.httpPort}
-                    initialDelaySeconds: 3
-                    periodSeconds: 10
-                    timeoutSeconds: 5
-                    failureThreshold: 3
-                  readinessProbe:
-                    httpGet:
-                      path: /readyz
-                      port: ${schema.spec.httpPort}
-                    initialDelaySeconds: 3
-                    periodSeconds: 10
-                    timeoutSeconds: 5
-                    failureThreshold: 3
-
+                  livenessProbe: ${schema.spec.livenessProbe}
+                  readinessProbe: ${schema.spec.readinessProbe}
     - id: service
       template:
         apiVersion: v1
@@ -213,7 +185,6 @@ spec:
               port:       ${schema.spec.grpcPort}
               protocol:   TCP
               targetPort: grpc
-
     - id: hpa
       includeWhen:
         - ${schema.spec.enableHPA}
@@ -242,7 +213,6 @@ spec:
                 target:
                   type: Utilization
                   averageUtilization: ${schema.spec.targetMemoryUtilization}
-
     - id: netpol
       includeWhen:
         - ${schema.spec.enableNetworkPolicy}
@@ -264,7 +234,6 @@ spec:
                   port: ${schema.spec.httpPort}
           egress:
             - {}  # allow all egress by default
-
     - id: pdb
       includeWhen:
         - ${schema.spec.enablePDB}
@@ -278,7 +247,6 @@ spec:
             matchLabels:
               app.kubernetes.io/name: ${schema.spec.name}
           minAvailable: ${schema.spec.pdbMinAvailable}
-
     - id: httpRoute
       includeWhen:
         - ${schema.spec.createHTTPRoute}

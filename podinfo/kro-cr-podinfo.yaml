@@ -32,4 +32,12 @@ spec:
     - name: grpc
       containerPort: 9999
       protocol: TCP
+  livenessProbe:
+    httpGet:
+      port: 9898
+      path: /healthz
+  readinessProbe:
+    httpGet:
+      port: 9898
+      path: /readyz
   createHTTPRoute: false
