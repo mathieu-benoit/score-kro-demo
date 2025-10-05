@@ -53,10 +53,14 @@ spec:
       runAsGroup:                 integer | default=65532 minimum=1000
       fsGroup:                    integer | default=65532 minimum=1
 
-      cpuRequest:                 string  | default="100m"
-      cpuLimit:                   string  | default="500m"
-      memoryRequest:              string  | default="128Mi"
-      memoryLimit:                string  | default="512Mi"
+      resources:
+        limits:
+          memory: string | default="512Mi"
+          cpu: string | default="500m"
+        requests:
+          memory: string | default="128Mi"
+          cpu: string | default="100m"
+          
 
       # HPA (autoscaling/v2)
       enableHPA:                  boolean | default=true
@@ -152,13 +156,7 @@ spec:
                   args: ${schema.spec.args}
                   env: ${schema.spec.env}
                   ports: ${schema.spec.ports}
-                  resources:
-                    requests:
-                      cpu:    ${schema.spec.cpuRequest}
-                      memory: ${schema.spec.memoryRequest}
-                    limits:
-                      cpu:    ${schema.spec.cpuLimit}
-                      memory: ${schema.spec.memoryLimit}
+                  resources: ${schema.spec.resources}
                   volumeMounts:
                     - name: data
                       mountPath: /data
