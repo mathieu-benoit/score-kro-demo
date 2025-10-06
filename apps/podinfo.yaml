@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    labels:
+        app.kubernetes.io/managed-by: score-k8s
+        pod-security.kubernetes.io/enforce: restricted
+    name: podinfo
+---
+apiVersion: kro.run/v1alpha1
+kind: Workload
+metadata:
+    name: podinfo
+spec:
+    image: ghcr.io/stefanprodan/podinfo:latest

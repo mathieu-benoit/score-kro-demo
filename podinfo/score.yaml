@@ -1,8 +1,6 @@
 apiVersion: score.dev/v1b1
 metadata:
-  name: podinfo-workload
-  annotations:
-    tags: "website,ui,golang"
+  name: podinfo
 service:
   ports:
     www:
@@ -14,12 +12,12 @@ containers:
     variables:
       PODINFO_UI_COLOR: "#34577c"
       PODINFO_UI_MESSAGE: ""
-resources:
-  dns:
-    type: dns
-  route:
-    type: route
-    params:
-      host: ${resources.dns.host}
-      path: /
-      port: 80
+#resources:
+#  dns:
+#    type: dns
+#  route:
+#    type: route
+#    params:
+#      host: ${resources.dns.host}
+#      path: /
+#      port: 80
