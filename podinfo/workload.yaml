@@ -1,9 +1,8 @@
 apiVersion: kro.run/v1alpha1
 kind: Workload
 metadata:
-  name: podinfo-app
+  name: podinfo
 spec:
-  name: podinfo-app-kro
   image: ghcr.io/stefanprodan/podinfo:6.9.2
   command:
     - ./podinfo
