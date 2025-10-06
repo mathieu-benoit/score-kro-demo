@@ -1,10 +1,8 @@
 apiVersion: kro.run/v1alpha1
 kind: Workload
 metadata:
-  name: podinfo-app
-  namespace: test
+  name: podinfo
 spec:
-  name: podinfo-app-kro
   image: ghcr.io/stefanprodan/podinfo:6.9.2
   command:
     - ./podinfo
@@ -22,14 +20,26 @@ spec:
       value: "#34577c"
     - name: PODINFO_UI_MESSAGE
       value: ""
-  ports:
-    - name: http
-      containerPort: 9898
-      protocol: TCP
-    - name: http-metrics
-      containerPort: 9797
-      protocol: TCP
-    - name: grpc
-      containerPort: 9999
-      protocol: TCP
+  livenessProbe:
+    httpGet:
+      port: 9898
+      path: /healthz
+  readinessProbe:
+    httpGet:
+      port: 9898
+      path: /readyz
+  service:
+    ports:
+      - name: http
+        port: 9898
+        targetPort: 9898
+        protocol: TCP
+      - name: http-metrics
+        port: 9797
+        targetPort: 9797
+        protocol: TCP
+      - name: grpc
+        port: 9999
+        targetPort: 9999
+        protocol: TCP
   createHTTPRoute: false

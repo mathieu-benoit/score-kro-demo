@@ -7,7 +7,6 @@ spec:
     apiVersion: v1alpha1
     kind: Workload
     spec:
-      name:            string  | required=true
       replicas:        integer | default=2 minimum=1 maximum=50
       image:           string  | required=true
       imagePullPolicy: string  | default="IfNotPresent"
@@ -17,17 +16,33 @@ spec:
 
       env: "[]envVar"
 
-      ports: "[]port"
+      livenessProbe:
+        httpGet: httpProbe
+        command: execProbe
+        initialDelaySeconds: integer | default=3
+        periodSeconds: integer | default=10
+        timeoutSeconds: integer | default=5
+        failureThreshold: integer | default=3
+      
+      readinessProbe:
+        httpGet: httpProbe
+        command: execProbe
+        initialDelaySeconds: integer | default=3
+        periodSeconds: integer | default=10
+        timeoutSeconds: integer | default=5
+        failureThreshold: integer | default=3
+      
+      service:
+        ports: "[]port | required"
 
-      # Ports (scalars) --> we'll find another way later
-      httpPort:        integer | default=9898 minimum=1 maximum=65535
-      grpcPort:        integer | default=9999 minimum=1 maximum=65535
+      prometheusPort: integer | default=9898 minimum=1 maximum=65535
 
       # Optional HTTPRoute (boolean + strings)
       createHTTPRoute: boolean | default=false
-      hostname:        string  | required=false
-      routePath:       string  | default="/"
-      gatewayName:     string  | default="default"
+      hostname: string | required=false
+      routePath: string | default="/"
+      routePort: integer | minimum=1 maximum=65535
+      gatewayName: string | default="default"
 
       # --- Security & resources knobs ---
       automountSAToken:           boolean | default=false
@@ -37,10 +52,13 @@ spec:
       runAsGroup:                 integer | default=65532 minimum=1000
       fsGroup:                    integer | default=65532 minimum=1
 
-      cpuRequest:                 string  | default="100m"
-      cpuLimit:                   string  | default="500m"
-      memoryRequest:              string  | default="128Mi"
-      memoryLimit:                string  | default="512Mi"
+      resources:
+        limits:
+          memory: string | default="512Mi"
+          cpu: string | default="500m"
+        requests:
+          memory: string | default="128Mi"
+          cpu: string | default="100m"
 
       # HPA (autoscaling/v2)
       enableHPA:                  boolean | default=true
@@ -54,79 +72,57 @@ spec:
       enablePDB:                  boolean | default=true
       pdbMinAvailable:            string  | default="50%"
 
-      enableRbac:                 boolean | default=true
-
     types:
       port:
         name: string
-        protocol: string
-        containerPort: integer | required
+        port: integer | required=true minimum=1 maximum=65535
+        protocol: string | enum="TCP,UDP" default="TCP"
+        targetPort: integer | minimum=1 maximum=65535
       envVar:
         name: string
         value: string
-    
-    status:
-      deploymentConditions: ${deployment.status.conditions}
-      availableReplicas:    ${deployment.status.availableReplicas}
-      serviceClusterIP:     ${service.spec.clusterIP}
-      routeParents:         ${httpRoute.status.parents}
+      httpProbe:
+        port: integer | required=true minimum=1 maximum=65535
+        path: string | required=true
+        scheme: string | enum="HTTP,HTTPS" default="HTTP"
+      execProbe:
+        command: "[]string"
 
   resources:
-
+    - id: service
+      includeWhen:
+        - ${has(schema.spec.service)}
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.metadata.name}
+          labels:
+            app.kubernetes.io/name: ${schema.metadata.name}
+        spec:
+          selector:
+            app.kubernetes.io/name: ${schema.metadata.name}
+          ports: ${schema.spec.service.ports}
     - id: serviceAccount
       template:
         apiVersion: v1
         kind: ServiceAccount
         metadata:
-          name: ${schema.spec.name}-sa
+          name: ${schema.metadata.name}
         automountServiceAccountToken: ${schema.spec.automountSAToken}
-
-    # Create Role if enableRbac is true
-    - id: role
-      includeWhen:
-        - ${schema.spec.enableRbac}
-      template:
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: Role
-        metadata:
-          name: ${schema.spec.name}-role
-        rules:
-          - apiGroups: [""]
-            resources: ["pods", "services"]
-            verbs: ["get", "list"]
-          - apiGroups: ["apps"]
-            resources: ["deployments"]
-            verbs: ["get", "list", "watch"]
-   # Create RoleBinding if enableRbac is true
-    - id: roleBinding
-      includeWhen:
-        - ${schema.spec.enableRbac}
-      template:
-        apiVersion: rbac.authorization.k8s.io/v1
-        kind: RoleBinding
-        metadata:
-          name: ${schema.spec.name}-rb
-        subjects:
-          - kind: ServiceAccount
-            name: ${serviceAccount.metadata.name}
-        roleRef:
-          apiGroup: rbac.authorization.k8s.io
-          kind: Role
-          name: ${schema.spec.name}-role}
-
     - id: deployment
       template:
         apiVersion: apps/v1
         kind: Deployment
         metadata:
-          name:      ${schema.spec.name}
+          name: ${schema.metadata.name}
           labels:
-            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/name: ${schema.metadata.name}
         spec:
           replicas: ${schema.spec.replicas}
           selector:
             matchLabels:
-              app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/name: ${schema.metadata.name}
           strategy:
             type: RollingUpdate
             rollingUpdate:
@@ -135,18 +131,18 @@ spec:
           template:
             metadata:
               labels:
-                app.kubernetes.io/name: ${schema.spec.name}
+                app.kubernetes.io/name: ${schema.metadata.name}
               annotations:
                 prometheus.io/scrape: "true"
-                prometheus.io/port:   ${string(schema.spec.httpPort)}
+                prometheus.io/port: ${string(schema.spec.prometheusPort)}
             spec:
               serviceAccountName: ${serviceAccount.metadata.name}
               automountServiceAccountToken: ${schema.spec.automountSAToken}
               securityContext:
                 runAsNonRoot: true
-                runAsUser:  ${schema.spec.runAsUser}
+                runAsUser: ${schema.spec.runAsUser}
                 runAsGroup: ${schema.spec.runAsGroup}
-                fsGroup:    ${schema.spec.fsGroup}
+                fsGroup: ${schema.spec.fsGroup}
                 seccompProfile:
                   type: RuntimeDefault
               volumes:
@@ -158,62 +154,18 @@ spec:
                   imagePullPolicy: ${schema.spec.imagePullPolicy}
                   securityContext:
                     allowPrivilegeEscalation: ${schema.spec.allowPrivilegeEscalation}
-                    readOnlyRootFilesystem:   ${schema.spec.readOnlyRootFilesystem}
+                    readOnlyRootFilesystem: ${schema.spec.readOnlyRootFilesystem}
                     capabilities:
                       drop: ["ALL"]
                   command: ${schema.spec.command}
                   args: ${schema.spec.args}
                   env: ${schema.spec.env}
-                  ports: ${schema.spec.ports}
-                  resources:
-                    requests:
-                      cpu:    ${schema.spec.cpuRequest}
-                      memory: ${schema.spec.memoryRequest}
-                    limits:
-                      cpu:    ${schema.spec.cpuLimit}
-                      memory: ${schema.spec.memoryLimit}
+                  resources: ${schema.spec.resources}
                   volumeMounts:
                     - name: data
                       mountPath: /data
-                  livenessProbe:
-                    httpGet:
-                      path: /healthz
-                      port: ${schema.spec.httpPort}
-                    initialDelaySeconds: 3
-                    periodSeconds: 10
-                    timeoutSeconds: 5
-                    failureThreshold: 3
-                  readinessProbe:
-                    httpGet:
-                      path: /readyz
-                      port: ${schema.spec.httpPort}
-                    initialDelaySeconds: 3
-                    periodSeconds: 10
-                    timeoutSeconds: 5
-                    failureThreshold: 3
-
-    - id: service
-      template:
-        apiVersion: v1
-        kind: Service
-        metadata:
-          name:      ${schema.spec.name}
-          labels:
-            app.kubernetes.io/name: ${schema.spec.name}
-        spec:
-          selector:
-            app.kubernetes.io/name: ${schema.spec.name}
-          type: ClusterIP
-          ports:
-            - name: http
-              port:       ${schema.spec.httpPort}
-              protocol:   TCP
-              targetPort: http
-            - name: grpc
-              port:       ${schema.spec.grpcPort}
-              protocol:   TCP
-              targetPort: grpc
-
+                  livenessProbe: ${schema.spec.livenessProbe}
+                  readinessProbe: ${schema.spec.readinessProbe}
     - id: hpa
       includeWhen:
         - ${schema.spec.enableHPA}
@@ -221,7 +173,7 @@ spec:
         apiVersion: autoscaling/v2
         kind: HorizontalPodAutoscaler
         metadata:
-          name: ${schema.spec.name}
+          name: ${schema.metadata.name}
         spec:
           scaleTargetRef:
             apiVersion: apps/v1
@@ -242,29 +194,28 @@ spec:
                 target:
                   type: Utilization
                   averageUtilization: ${schema.spec.targetMemoryUtilization}
-
     - id: netpol
       includeWhen:
         - ${schema.spec.enableNetworkPolicy}
+        - ${schema.spec.createHTTPRoute}
       template:
         apiVersion: networking.k8s.io/v1
         kind: NetworkPolicy
         metadata:
-          name: ${schema.spec.name}-default-deny-ingress
+          name: ${schema.metadata.name}-default-deny-ingress
         spec:
           podSelector:
             matchLabels:
-              app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/name: ${schema.metadata.name}
           policyTypes: ["Ingress","Egress"]
           ingress:
             - from:
                 - podSelector: {}   # adjust as needed
               ports:
                 - protocol: TCP
-                  port: ${schema.spec.httpPort}
+                  port: ${schema.spec.routePort}
           egress:
             - {}  # allow all egress by default
-
     - id: pdb
       includeWhen:
         - ${schema.spec.enablePDB}
@@ -272,13 +223,12 @@ spec:
         apiVersion: policy/v1
         kind: PodDisruptionBudget
         metadata:
-          name: ${schema.spec.name}
+          name: ${schema.metadata.name}
         spec:
           selector:
             matchLabels:
-              app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/name: ${schema.metadata.name}
           minAvailable: ${schema.spec.pdbMinAvailable}
-
     - id: httpRoute
       includeWhen:
         - ${schema.spec.createHTTPRoute}
@@ -286,7 +236,7 @@ spec:
         apiVersion: gateway.networking.k8s.io/v1
         kind: HTTPRoute
         metadata:
-          name:      ${schema.spec.name}
+          name: ${schema.metadata.name}
         spec:
           hostnames:
             - ${schema.spec.hostname}
@@ -301,4 +251,4 @@ spec:
                     value: ${schema.spec.routePath}
               backendRefs:
                 - name: ${service.metadata.name}
-                  port: ${schema.spec.httpPort}
+                  port: ${schema.spec.routePort}
