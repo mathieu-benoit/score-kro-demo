@@ -17,8 +17,6 @@ spec:
 
       env: "[]envVar"
 
-      ports: "[]port"
-
       livenessProbe:
         httpGet: httpProbe
         command: execProbe
@@ -34,6 +32,9 @@ spec:
         periodSeconds: integer | default=10
         timeoutSeconds: integer | default=5
         failureThreshold: integer | default=3
+      
+      service:
+        ports: "[]port | required"
 
       # Ports (scalars) --> we'll find another way later
       httpPort:        integer | default=9898 minimum=1 maximum=65535
@@ -60,7 +61,6 @@ spec:
         requests:
           memory: string | default="128Mi"
           cpu: string | default="100m"
-          
 
       # HPA (autoscaling/v2)
       enableHPA:                  boolean | default=true
@@ -74,13 +74,12 @@ spec:
       enablePDB:                  boolean | default=true
       pdbMinAvailable:            string  | default="50%"
 
-      enableRbac:                 boolean | default=true
-
     types:
       port:
         name: string
+        port: integer | required=true minimum=1 maximum=65535
         protocol: string | enum="TCP,UDP" default="TCP"
-        containerPort: integer | required=true minimum=1 maximum=65535
+        targetPort: integer | minimum=1 maximum=65535
       envVar:
         name: string
         value: string
@@ -90,14 +89,22 @@ spec:
         scheme: string | enum="HTTP,HTTPS" default="HTTP"
       execProbe:
         command: "[]string"
-    
-    status:
-      deploymentConditions: ${deployment.status.conditions}
-      availableReplicas:    ${deployment.status.availableReplicas}
-      serviceClusterIP:     ${service.spec.clusterIP}
-      routeParents:         ${httpRoute.status.parents}
 
   resources:
+    - id: service
+      includeWhen:
+        - ${has(schema.spec.service)}
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.spec.name}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+        spec:
+          selector:
+            app.kubernetes.io/name: ${schema.spec.name}
+          ports: ${schema.spec.service.ports}
     - id: serviceAccount
       template:
         apiVersion: v1
@@ -110,7 +117,7 @@ spec:
         apiVersion: apps/v1
         kind: Deployment
         metadata:
-          name:      ${schema.spec.name}
+          name: ${schema.spec.name}
           labels:
             app.kubernetes.io/name: ${schema.spec.name}
         spec:
@@ -129,15 +136,15 @@ spec:
                 app.kubernetes.io/name: ${schema.spec.name}
               annotations:
                 prometheus.io/scrape: "true"
-                prometheus.io/port:   ${string(schema.spec.httpPort)}
+                prometheus.io/port: ${string(schema.spec.httpPort)}
             spec:
               serviceAccountName: ${serviceAccount.metadata.name}
               automountServiceAccountToken: ${schema.spec.automountSAToken}
               securityContext:
                 runAsNonRoot: true
-                runAsUser:  ${schema.spec.runAsUser}
+                runAsUser: ${schema.spec.runAsUser}
                 runAsGroup: ${schema.spec.runAsGroup}
-                fsGroup:    ${schema.spec.fsGroup}
+                fsGroup: ${schema.spec.fsGroup}
                 seccompProfile:
                   type: RuntimeDefault
               volumes:
@@ -149,40 +156,18 @@ spec:
                   imagePullPolicy: ${schema.spec.imagePullPolicy}
                   securityContext:
                     allowPrivilegeEscalation: ${schema.spec.allowPrivilegeEscalation}
-                    readOnlyRootFilesystem:   ${schema.spec.readOnlyRootFilesystem}
+                    readOnlyRootFilesystem: ${schema.spec.readOnlyRootFilesystem}
                     capabilities:
                       drop: ["ALL"]
                   command: ${schema.spec.command}
                   args: ${schema.spec.args}
                   env: ${schema.spec.env}
-                  ports: ${schema.spec.ports}
                   resources: ${schema.spec.resources}
                   volumeMounts:
                     - name: data
                       mountPath: /data
                   livenessProbe: ${schema.spec.livenessProbe}
                   readinessProbe: ${schema.spec.readinessProbe}
-    - id: service
-      template:
-        apiVersion: v1
-        kind: Service
-        metadata:
-          name:      ${schema.spec.name}
-          labels:
-            app.kubernetes.io/name: ${schema.spec.name}
-        spec:
-          selector:
-            app.kubernetes.io/name: ${schema.spec.name}
-          type: ClusterIP
-          ports:
-            - name: http
-              port:       ${schema.spec.httpPort}
-              protocol:   TCP
-              targetPort: http
-            - name: grpc
-              port:       ${schema.spec.grpcPort}
-              protocol:   TCP
-              targetPort: grpc
     - id: hpa
       includeWhen:
         - ${schema.spec.enableHPA}
