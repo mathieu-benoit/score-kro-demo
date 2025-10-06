@@ -35,15 +35,14 @@ spec:
       service:
         ports: "[]port | required"
 
-      # Ports (scalars) --> we'll find another way later
-      httpPort:        integer | default=9898 minimum=1 maximum=65535
-      grpcPort:        integer | default=9999 minimum=1 maximum=65535
+      prometheusPort: integer | default=9898 minimum=1 maximum=65535
 
       # Optional HTTPRoute (boolean + strings)
       createHTTPRoute: boolean | default=false
-      hostname:        string  | required=false
-      routePath:       string  | default="/"
-      gatewayName:     string  | default="default"
+      hostname: string | required=false
+      routePath: string | default="/"
+      routePort: integer | minimum=1 maximum=65535
+      gatewayName: string | default="default"
 
       # --- Security & resources knobs ---
       automountSAToken:           boolean | default=false
@@ -135,7 +134,7 @@ spec:
                 app.kubernetes.io/name: ${schema.metadata.name}
               annotations:
                 prometheus.io/scrape: "true"
-                prometheus.io/port: ${string(schema.spec.httpPort)}
+                prometheus.io/port: ${string(schema.spec.prometheusPort)}
             spec:
               serviceAccountName: ${serviceAccount.metadata.name}
               automountServiceAccountToken: ${schema.spec.automountSAToken}
@@ -198,6 +197,7 @@ spec:
     - id: netpol
       includeWhen:
         - ${schema.spec.enableNetworkPolicy}
+        - ${schema.spec.createHTTPRoute}
       template:
         apiVersion: networking.k8s.io/v1
         kind: NetworkPolicy
@@ -213,7 +213,7 @@ spec:
                 - podSelector: {}   # adjust as needed
               ports:
                 - protocol: TCP
-                  port: ${schema.spec.httpPort}
+                  port: ${schema.spec.routePort}
           egress:
             - {}  # allow all egress by default
     - id: pdb
@@ -251,4 +251,4 @@ spec:
                     value: ${schema.spec.routePath}
               backendRefs:
                 - name: ${service.metadata.name}
-                  port: ${schema.spec.httpPort}
+                  port: ${schema.spec.routePort}
