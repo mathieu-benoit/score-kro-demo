@@ -7,9 +7,9 @@ spec:
     apiVersion: v1alpha1
     kind: Workload
     spec:
-      replicas:        integer | default=2 minimum=1 maximum=50
-      image:           string  | required=true
-      imagePullPolicy: string  | default="IfNotPresent"
+      replicas: integer | default=1 minimum=1 maximum=50
+      image: string | required=true
+      imagePullPolicy: string | default="IfNotPresent"
 
       command: "[]string"
       args: "[]string"
@@ -35,23 +35,6 @@ spec:
       service:
         ports: "[]port | required"
 
-      prometheusPort: integer | default=9898 minimum=1 maximum=65535
-
-      # Optional HTTPRoute (boolean + strings)
-      createHTTPRoute: boolean | default=false
-      hostname: string | required=false
-      routePath: string | default="/"
-      routePort: integer | minimum=1 maximum=65535
-      gatewayName: string | default="default"
-
-      # --- Security & resources knobs ---
-      automountSAToken:           boolean | default=false
-      readOnlyRootFilesystem:     boolean | default=true
-      allowPrivilegeEscalation:   boolean | default=false
-      runAsUser:                  integer | default=65532 minimum=1000
-      runAsGroup:                 integer | default=65532 minimum=1000
-      fsGroup:                    integer | default=65532 minimum=1
-
       resources:
         limits:
           memory: string | default="512Mi"
@@ -60,17 +43,31 @@ spec:
           memory: string | default="128Mi"
           cpu: string | default="100m"
 
-      # HPA (autoscaling/v2)
-      enableHPA:                  boolean | default=true
-      minReplicas:                integer | default=2 minimum=1
-      maxReplicas:                integer | default=10 minimum=1
-      targetCPUUtilization:       integer | default=70 minimum=1 maximum=100
-      targetMemoryUtilization:    integer | default=80 minimum=1 maximum=100
+      hpa:
+        minReplicas: integer | default=2 minimum=1
+        maxReplicas: integer | default=10 minimum=1
+        targetCPUUtilization: integer | default=70 minimum=1 maximum=100
+        targetMemoryUtilization: integer | default=80 minimum=1 maximum=100
+
+      route:
+        host: string
+        path: string | default="/"
+        port: integer | required=true minimum=1 maximum=65535
+        gatewayName: string | default="default"
 
       # Optional add-ons
-      enableNetworkPolicy:        boolean | default=true
-      enablePDB:                  boolean | default=true
-      pdbMinAvailable:            string  | default="50%"
+      enableNetworkPolicy: boolean | default=true
+      enablePDB: boolean | default=true
+      pdbMinAvailable: string | default="50%"
+
+      prometheusPort: integer | default=9898 minimum=1 maximum=65535
+
+      automountSAToken: boolean | default=false
+      readOnlyRootFilesystem: boolean | default=true
+      allowPrivilegeEscalation: boolean | default=false
+      runAsUser: integer | default=65532 minimum=1000
+      runAsGroup: integer | default=65532 minimum=1000
+      fsGroup: integer | default=65532 minimum=1
 
     types:
       port:
@@ -168,7 +165,7 @@ spec:
                   readinessProbe: ${schema.spec.readinessProbe}
     - id: hpa
       includeWhen:
-        - ${schema.spec.enableHPA}
+        - ${has(schema.spec.hpa)}
       template:
         apiVersion: autoscaling/v2
         kind: HorizontalPodAutoscaler
@@ -179,25 +176,25 @@ spec:
             apiVersion: apps/v1
             kind: Deployment
             name: ${deployment.metadata.name}
-          minReplicas: ${schema.spec.minReplicas}
-          maxReplicas: ${schema.spec.maxReplicas}
+          minReplicas: ${schema.spec.hpa.minReplicas}
+          maxReplicas: ${schema.spec.hpa.maxReplicas}
           metrics:
             - type: Resource
               resource:
                 name: cpu
                 target:
                   type: Utilization
-                  averageUtilization: ${schema.spec.targetCPUUtilization}
+                  averageUtilization: ${schema.spec.hpa.targetCPUUtilization}
             - type: Resource
               resource:
                 name: memory
                 target:
                   type: Utilization
-                  averageUtilization: ${schema.spec.targetMemoryUtilization}
+                  averageUtilization: ${schema.spec.hpa.targetMemoryUtilization}
     - id: netpol
       includeWhen:
         - ${schema.spec.enableNetworkPolicy}
-        - ${schema.spec.createHTTPRoute}
+        - ${has(schema.spec.route)}
       template:
         apiVersion: networking.k8s.io/v1
         kind: NetworkPolicy
@@ -213,7 +210,7 @@ spec:
                 - podSelector: {}   # adjust as needed
               ports:
                 - protocol: TCP
-                  port: ${schema.spec.routePort}
+                  port: ${schema.spec.route.port}
           egress:
             - {}  # allow all egress by default
     - id: pdb
@@ -231,7 +228,7 @@ spec:
           minAvailable: ${schema.spec.pdbMinAvailable}
     - id: httpRoute
       includeWhen:
-        - ${schema.spec.createHTTPRoute}
+        - ${has(schema.spec.route)}
       template:
         apiVersion: gateway.networking.k8s.io/v1
         kind: HTTPRoute
@@ -239,16 +236,16 @@ spec:
           name: ${schema.metadata.name}
         spec:
           hostnames:
-            - ${schema.spec.hostname}
+            - ${schema.spec.route.host}
           parentRefs:
             - group: gateway.networking.k8s.io
               kind: Gateway
-              name: ${schema.spec.gatewayName}
+              name: ${schema.spec.route.gatewayName}
           rules:
             - matches:
                 - path:
                     type: PathPrefix
-                    value: ${schema.spec.routePath}
+                    value: ${schema.spec.route.path}
               backendRefs:
                 - name: ${service.metadata.name}
-                  port: ${schema.spec.routePort}
+                  port: ${schema.spec.route.port}

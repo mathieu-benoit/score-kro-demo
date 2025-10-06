@@ -42,4 +42,3 @@ spec:
         port: 9999
         targetPort: 9999
         protocol: TCP
-  createHTTPRoute: false
