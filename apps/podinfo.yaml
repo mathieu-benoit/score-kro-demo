@@ -37,3 +37,17 @@ spec:
         httpGet:
             path: /readyz
             port: 9898
+    service:
+        ports:
+            - name: grpc
+              port: 9999
+              protocol: TCP
+              targetPort: 9999
+            - name: http
+              port: 9898
+              protocol: TCP
+              targetPort: 9898
+            - name: http-metrics
+              port: 9797
+              protocol: TCP
+              targetPort: 9797

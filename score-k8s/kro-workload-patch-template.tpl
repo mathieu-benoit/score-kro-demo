@@ -6,7 +6,9 @@
 {{ end }}
 {{ end }}
 
+
 {{ range $name, $spec := .Workloads }}
+{{ $service := $spec.service }}
 {{ $firstContainerName := index (keys $spec.containers) 0 }}
 {{ $firstContainer := get $spec.containers $firstContainerName }}
 - op: set
@@ -37,14 +39,14 @@
           value: "{{ $variableValue }}"
         {{ end }}
       {{ end }}
-      {{- if ne $firstContainer.livenessProbe nil }}
+      {{- if $firstContainer.livenessProbe }}
       livenessProbe:
-        {{- if ne $firstContainer.livenessProbe.httpGet nil }}
+        {{- if $firstContainer.livenessProbe.httpGet }}
         httpGet:
           port: {{ $firstContainer.livenessProbe.httpGet.port }}
           path: {{ $firstContainer.livenessProbe.httpGet.path }}
         {{ end }}
-        {{- if ne $firstContainer.livenessProbe.exec nil }}
+        {{- if $firstContainer.livenessProbe.exec }}
         exec:
           command:
           {{- range $command := $firstContainer.livenessProbe.exec.command }}
@@ -52,19 +54,29 @@
           {{ end }}
         {{ end }}
       {{ end }}
-      {{- if ne $firstContainer.readinessProbe nil }}
+      {{- if $firstContainer.readinessProbe }}
       readinessProbe:
-        {{- if ne $firstContainer.readinessProbe.httpGet nil }}
+        {{- if $firstContainer.readinessProbe.httpGet }}
         httpGet:
           port: {{ $firstContainer.readinessProbe.httpGet.port }}
           path: {{ $firstContainer.readinessProbe.httpGet.path }}
         {{ end }}
-        {{- if ne $firstContainer.readinessProbe.exec nil }}
+        {{- if $firstContainer.readinessProbe.exec }}
         exec:
           command:
           {{- range $command := $firstContainer.readinessProbe.exec.command }}
           - {{ $command }}
           {{ end }}
         {{ end }}
+      {{ end }}
+      {{- if $service }}
+      service:
+        ports:
+          {{- range $portName, $port := $service.ports }}
+          - name: {{ $portName }}
+            port: {{ $port.port }}
+            targetPort: {{ $port.targetPort }}
+            protocol: {{ $port.protocol }}
+          {{ end }}
       {{ end }}
 {{ end }}
