@@ -38,6 +38,13 @@ spec:
         httpGet:
             path: /readyz
             port: 9898
+    resources:
+        limits:
+            cpu: 500m
+            memory: 512Mi
+        requests:
+            cpu: 100m
+            memory: 128Mi
     service:
         ports:
             - name: grpc

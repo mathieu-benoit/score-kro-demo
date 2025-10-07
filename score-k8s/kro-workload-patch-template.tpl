@@ -42,6 +42,19 @@
           value: "{{ $variableValue }}"
         {{ end }}
       {{ end }}
+      {{- if $firstContainer.resources }}
+      resources:
+        {{- if $firstContainer.resources.limits }}
+        limits:
+          memory: {{ $firstContainer.resources.limits.memory }}
+          cpu: {{ $firstContainer.resources.limits.cpu }}
+        {{ end }}
+        {{- if $firstContainer.resources.requests }}
+        requests:
+          memory: {{ $firstContainer.resources.requests.memory }}
+          cpu: {{ $firstContainer.resources.requests.cpu }}
+        {{ end }}
+      {{ end }}
       {{- if $firstContainer.livenessProbe }}
       livenessProbe:
         {{- if $firstContainer.livenessProbe.httpGet }}
