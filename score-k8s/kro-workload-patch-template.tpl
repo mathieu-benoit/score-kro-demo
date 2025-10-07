@@ -6,7 +6,7 @@
 {{ end }}
 {{ end }}
 
-
+{{ $namespace := .Namespace }}
 {{ range $name, $spec := .Workloads }}
 {{ $service := $spec.service }}
 {{ $firstContainerName := index (keys $spec.containers) 0 }}
@@ -18,6 +18,9 @@
     kind: Workload
     metadata:
       name: {{ $name }}
+      {{ if ne $namespace "" }}
+      namespace: {{ $namespace }}
+      {{ end }}
     spec:
       image: {{ $firstContainer.image }}
       {{- if (gt (len $firstContainer.command) 0) }}

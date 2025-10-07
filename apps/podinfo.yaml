@@ -11,6 +11,7 @@ apiVersion: kro.run/v1alpha1
 kind: Workload
 metadata:
     name: podinfo
+    namespace: podinfo
 spec:
     args:
         - --port=9898
