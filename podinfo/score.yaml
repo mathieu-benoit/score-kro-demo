@@ -32,6 +32,14 @@ containers:
     variables:
       PODINFO_UI_COLOR: "#34577c"
       PODINFO_UI_MESSAGE: ""
+    livenessProbe:
+      httpGet:
+        port: 9898
+        path: /healthz
+    readinessProbe:
+      httpGet:
+        port: 9898
+        path: /readyz
 #resources:
 #  dns:
 #    type: dns

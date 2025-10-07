@@ -37,4 +37,34 @@
           value: "{{ $variableValue }}"
         {{ end }}
       {{ end }}
+      {{- if ne $firstContainer.livenessProbe nil }}
+      livenessProbe:
+        {{- if ne $firstContainer.livenessProbe.httpGet nil }}
+        httpGet:
+          port: {{ $firstContainer.livenessProbe.httpGet.port }}
+          path: {{ $firstContainer.livenessProbe.httpGet.path }}
+        {{ end }}
+        {{- if ne $firstContainer.livenessProbe.exec nil }}
+        exec:
+          command:
+          {{- range $command := $firstContainer.livenessProbe.exec.command }}
+          - {{ $command }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+      {{- if ne $firstContainer.readinessProbe nil }}
+      readinessProbe:
+        {{- if ne $firstContainer.readinessProbe.httpGet nil }}
+        httpGet:
+          port: {{ $firstContainer.readinessProbe.httpGet.port }}
+          path: {{ $firstContainer.readinessProbe.httpGet.path }}
+        {{ end }}
+        {{- if ne $firstContainer.readinessProbe.exec nil }}
+        exec:
+          command:
+          {{- range $command := $firstContainer.readinessProbe.exec.command }}
+          - {{ $command }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
 {{ end }}
