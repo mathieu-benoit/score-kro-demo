@@ -12,4 +12,20 @@ kind: Workload
 metadata:
     name: podinfo
 spec:
+    args:
+        - --port=9898
+        - --cert-path=/data/cert
+        - --port-metrics=9797
+        - --grpc-port=9999
+        - --grpc-service-name=podinfo
+        - --level=info
+        - --random-delay=false
+        - --random-error=false
+    command:
+        - ./podinfo
+    env:
+        - name: PODINFO_UI_COLOR
+          value: '#34577c'
+        - name: PODINFO_UI_MESSAGE
+          value: ""
     image: ghcr.io/stefanprodan/podinfo:latest

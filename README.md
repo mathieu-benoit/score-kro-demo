@@ -12,6 +12,7 @@ kubectl apply -f kro/workload.yaml
 Score:
 ```bash
 score-k8s init \
+    --no-sample \
     --no-default-provisioners \
     --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
     --patch-templates ./score-k8s/kro-workload-patch-template.tpl

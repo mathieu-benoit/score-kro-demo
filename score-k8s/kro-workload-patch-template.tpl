@@ -18,4 +18,23 @@
       name: {{ $name }}
     spec:
       image: {{ $firstContainer.image }}
+      {{- if (gt (len $firstContainer.command) 0) }}
+      command:
+        {{- range $i, $cmd := $firstContainer.command }}
+        - {{ $cmd }}
+        {{ end }}
+      {{ end }}
+      {{- if (gt (len $firstContainer.args) 0) }}
+      args:
+        {{- range $i, $arg := $firstContainer.args }}
+        - {{ $arg }}
+        {{ end }}
+      {{ end }}
+      {{- if (gt (len $firstContainer.variables) 0) }}
+      env:
+        {{- range $variableName, $variableValue := $firstContainer.variables }}
+        - name: {{ $variableName }}
+          value: "{{ $variableValue }}"
+        {{ end }}
+      {{ end }}
 {{ end }}
