@@ -6,3 +6,4 @@ manifests.yaml
 .env
 
 .DS_Store
+score.yaml

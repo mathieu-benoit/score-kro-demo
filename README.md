@@ -2,48 +2,35 @@
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mathieu-benoit/score-kro-demo)
 
-## TODOs
-
-First:
-- [x] DevContainer with Docker, Kind, Score pre-installed
-- [x] Kind cluster setup in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
-- [x] Install Kro in [`scripts/setup-kind-cluster.sh`](scripts/setup-kind-cluster.sh)
-- [x] Define the Workload `ResourceGraphDefinition`
-- [x] Argo setup
-- [ ] TODO-`score-k8s` setup --> Mathieu
-- [ ] In-cluster Redis
-- [ ] "Fake" KCC Memorystore (Redis)
-
---> Objective: be able to deploy `podinfo` via Score and Kro, with env vars or args.
-
-Current limitations to see if we can solve (in Kro):
-- `args`
-- `command`
-- `ports`
-
-Rough script for the "first demo":
+Prepare local cluster:
 ```bash
-
 ./scripts/setup-kind-cluster.sh
 
+kubectl apply -f kro/workload.yaml
+```
 
-### Score ###
-score-k8s init ...
+Score:
+```bash
+score-k8s init \
+    --no-sample \
+    --no-default-provisioners \
+    --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
+    --patch-templates ./score-k8s/kro-workload-patch-template.tpl
 
-score-k8s generate podinfo/score.yaml --image ghcr.io/stefanprodan/podinfo:latest --namespace podinfo-app-score --generate-namespace
+score-k8s generate podinfo/score.yaml \
+    --image ghcr.io/stefanprodan/podinfo:latest \
+    --namespace podinfo \
+    --generate-namespace \
+    --output apps/podinfo.yaml
+```
 
-# With GitOps
-cp manifests.yaml apps/score-podinfo.yaml
-# Without GitOps
-kubectl apply -f manifests.yaml
+Deployment:
+```bash
+# Optional, without GitOps:
+kubectl apply -f apps/podinfo.yaml
 
-### Kro ###
-# Kro part with GitOps
-cp podinfo/kro-cr-podinfo.yaml apps/kro-cr-podinfo.yaml
-
-# Kro part without GitOps
-kubectl apply -f kro/kro-rgd-podinfo.yaml
-kubectl apply -f podinfo/kro-cr-podinfo.yaml
+# Otherwise, with GitOps:
+git push
 ```
 
 
@@ -71,8 +58,8 @@ Change from:
           name: ${schema.spec.namespace}
           # labels:
           #   pod-security.kubernetes.io/enforce: "restricted"
-          #   pod-security.kubernetes.io/audit:    "baseline"
-          #   pod-security.kubernetes.io/warn:     "baseline"
+          #   pod-security.kubernetes.io/audit: "baseline"
+          #   pod-security.kubernetes.io/warn: "baseline"
 ```
 To:
 
@@ -86,8 +73,8 @@ To:
           name: ${schema.spec.namespace}
           labels:
             pod-security.kubernetes.io/enforce: "restricted"
-            pod-security.kubernetes.io/audit:    "baseline"
-            pod-security.kubernetes.io/warn:     "baseline"
+            pod-security.kubernetes.io/audit: "baseline"
+            pod-security.kubernetes.io/warn: "baseline"
 ```
 
 This is an easy change, but what about more complex changes?
@@ -115,8 +102,7 @@ See next Demo 1.
 
 - KRO limitations:
     - CEL
-    - ARGS/Lists []
-    - Iterate over Objects, etc.
+    - Iterate over Objects, etc. --> https://github.com/kubernetes-sigs/kro/issues/17
     - DAY 2 Operation, Error Handling
     - Depends on Operator - No Dry Run
 
