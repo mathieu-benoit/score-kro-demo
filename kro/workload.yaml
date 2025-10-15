@@ -15,6 +15,8 @@ spec:
       args: "[]string"
 
       env: "[]envVar"
+      rules: "[]rbacRule"
+
 
       livenessProbe:
         httpGet: httpProbe
@@ -23,7 +25,7 @@ spec:
         periodSeconds: integer | default=10
         timeoutSeconds: integer | default=5
         failureThreshold: integer | default=3
-      
+
       readinessProbe:
         httpGet: httpProbe
         command: execProbe
@@ -31,7 +33,7 @@ spec:
         periodSeconds: integer | default=10
         timeoutSeconds: integer | default=5
         failureThreshold: integer | default=3
-      
+
       service:
         ports: "[]port | required"
 
@@ -84,6 +86,10 @@ spec:
         scheme: string | enum="HTTP,HTTPS" default="HTTP"
       execProbe:
         command: "[]string"
+      rbacRule:
+        apiGroups: "[]string"
+        resources: "[]string"
+        verbs: "[]string"
 
   resources:
     - id: service
@@ -100,6 +106,30 @@ spec:
           selector:
             app.kubernetes.io/name: ${schema.metadata.name}
           ports: ${schema.spec.service.ports}
+    - id: role
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: Role
+        metadata:
+          name: ${schema.metadata.name}
+          labels:
+            app.kubernetes.io/name: ${schema.metadata.name}
+        rules: ${schema.spec.rules}
+    - id: roleBinding
+      template:
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        metadata:
+          name: ${schema.metadata.name}
+          namespace: ${schema.metadata.namespace}
+        subjects:
+        - kind: ServiceAccount
+          name: ${schema.metadata.name}
+          namespace: ${schema.metadata.namespace}
+        roleRef:
+          apiGroup: rbac.authorization.k8s.io
+          kind: Role
+          name: ${role.metadata.name}
     - id: serviceAccount
       template:
         apiVersion: v1
@@ -107,6 +137,13 @@ spec:
         metadata:
           name: ${schema.metadata.name}
         automountServiceAccountToken: ${schema.spec.automountSAToken}
+    # - id: serviceAccount2
+    #   template:
+    #     apiVersion: v1
+    #     kind: ServiceAccount
+    #     metadata:
+    #       name: ${schema.metadata.name}-2
+    #     automountServiceAccountToken: ${schema.spec.automountSAToken}
     - id: deployment
       template:
         apiVersion: apps/v1
@@ -207,12 +244,12 @@ spec:
           policyTypes: ["Ingress","Egress"]
           ingress:
             - from:
-                - podSelector: {}   # adjust as needed
+                - podSelector: {}
               ports:
                 - protocol: TCP
                   port: ${schema.spec.route.port}
           egress:
-            - {}  # allow all egress by default
+            - {}
     - id: pdb
       includeWhen:
         - ${schema.spec.enablePDB}
