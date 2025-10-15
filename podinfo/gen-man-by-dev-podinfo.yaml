@@ -1,0 +1,65 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    labels:
+        app.kubernetes.io/managed-by: argocd
+        pod-security.kubernetes.io/enforce: restricted
+    name: kro-man-podinfo
+---
+apiVersion: kro.run/v1alpha1
+kind: Workload
+metadata:
+    name: kro-man-podinfo
+    namespace: kro-man-podinfo
+spec:
+    rules:
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get", "watch"]
+    args:
+        - --port=9898
+        - --cert-path=/data/cert
+        - --port-metrics=9797
+        - --grpc-port=9999
+        - --grpc-service-name=podinfo
+        - --level=info
+        - --random-delay=false
+        - --random-error=false
+    command:
+        - ./podinfo
+    env:
+        - name: PODINFO_UI_COLOR
+          value: '#34577c'
+        - name: PODINFO_UI_MESSAGE
+          value: ""
+    image: ghcr.io/stefanprodan/podinfo:latest
+    livenessProbe:
+        httpGet:
+            path: /healthz
+            port: 9898
+    readinessProbe:
+        httpGet:
+            path: /readyz
+            port: 9898
+    resources:
+        limits:
+            cpu: 500m
+            memory: 512Mi
+        requests:
+            cpu: 100m
+            memory: 128Mi
+    service:
+        ports:
+            - name: grpc
+              port: 9999
+              protocol: TCP
+              targetPort: 9999
+            - name: http
+              port: 9898
+              protocol: TCP
+              targetPort: 9898
+            - name: http-metrics
+              port: 9797
+              protocol: TCP
+              targetPort: 9797

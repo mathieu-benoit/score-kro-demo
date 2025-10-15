@@ -31,7 +31,7 @@ containers:
       - --random-error=false
     variables:
       PODINFO_UI_COLOR: "#34577c"
-      PODINFO_UI_MESSAGE: ""
+      PODINFO_UI_MESSAGE: "Welcome to Podinfo! - Managed by ArgoCD, Kro and Score"
     resources:
       limits:
         memory: "512Mi"
