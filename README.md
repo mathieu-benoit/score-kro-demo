@@ -232,8 +232,6 @@ This led us to reconsider using KRO as the main deployment mechanism.
 
 ## Demo 4 – Day-2 Operations Limitations
 
-![Demo 5](images/demo-5.png)
-
 Even if you solve Day-1 issues, Day-2 operations remain challenging.
 As a platform team, you want to offer **self-service for developers** while also enforcing **golden paths and operational safety**.
 
