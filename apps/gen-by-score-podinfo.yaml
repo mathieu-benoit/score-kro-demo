@@ -46,7 +46,7 @@ spec:
             cpu: 100m
             memory: 128Mi
     route:
-        host: miniature-barnacle-7vvp6r4pjv53qwx-80.app.github.dev
+        host: localhost
         path: /
         port: 9898
     service:
