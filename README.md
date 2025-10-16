@@ -30,6 +30,7 @@ score-k8s generate podinfo/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:latest \
     --namespace podinfo \
     --generate-namespace \
+    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from ArgoCD, Kro and Score!" \
     --output apps/gen-by-score-podinfo.yaml
 ```
 
@@ -291,3 +292,16 @@ The key takeaway is that you need to understand your specific use case — abstr
   * Clearer logs and event messages.
   * More accessible error handling (not just in operator logs).
 
+## Demo 6 - `score-compose`
+
+```bash
+score-compose init \
+    --no-sample \
+    --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl
+
+score-compose generate podinfo/score.yaml \
+    --image ghcr.io/stefanprodan/podinfo:latest \
+    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score!"
+
+docker compose up --build -d
+```
