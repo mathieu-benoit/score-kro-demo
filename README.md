@@ -178,7 +178,7 @@ types:
     resources: "[]string"
     verbs: "[]string"
 
-rules: "[]rbacRule"
+rbacRules: "[]rbacRule"
 ```
 
 Or nested maps:
