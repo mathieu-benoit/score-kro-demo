@@ -52,10 +52,11 @@ spec:
         targetMemoryUtilization: integer | default=80 minimum=1 maximum=100
 
       route:
-        host: string
+        host: string | required=true
         path: string | default="/"
         port: integer | required=true minimum=1 maximum=65535
         gatewayName: string | default="default"
+        gatewayNamespace: string | default="default"
 
       # Optional add-ons
       enableNetworkPolicy: boolean | default=true
@@ -278,6 +279,7 @@ spec:
             - group: gateway.networking.k8s.io
               kind: Gateway
               name: ${schema.spec.route.gatewayName}
+              namespace: ${schema.spec.route.gatewayNamespace}
           rules:
             - matches:
                 - path:

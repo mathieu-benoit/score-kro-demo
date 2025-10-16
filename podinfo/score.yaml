@@ -47,12 +47,12 @@ containers:
       httpGet:
         port: 9898
         path: /readyz
-#resources:
-#  dns:
-#    type: dns
-#  route:
-#    type: route
-#    params:
-#      host: ${resources.dns.host}
-#      path: /
-#      port: 80
+resources:
+  dns:
+    type: dns
+  route:
+    type: route
+    params:
+      host: ${resources.dns.host}
+      path: /
+      port: 9898

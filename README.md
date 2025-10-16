@@ -24,7 +24,8 @@ score-k8s init \
     --no-sample \
     --no-default-provisioners \
     --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
-    --patch-templates ./score-k8s/kro-workload-patch-template.tpl
+    --patch-templates ./score-k8s/kro-workload-patch-template.tpl \
+    --provisioners ./score-k8s/kro-provisioners.yaml
 
 score-k8s generate podinfo/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:latest \

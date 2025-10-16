@@ -9,6 +9,7 @@
 {{ $namespace := .Namespace }}
 {{ range $name, $spec := .Workloads }}
 {{ $service := $spec.service }}
+{{ $resources := $spec.resources }}
 {{ $firstContainerName := index (keys $spec.containers) 0 }}
 {{ $firstContainer := get $spec.containers $firstContainerName }}
 - op: set
@@ -94,5 +95,13 @@
             targetPort: {{ $port.targetPort }}
             protocol: {{ $port.protocol }}
           {{ end }}
+      {{ end }}
+      {{- range $resourceName, $resource := $resources }}
+      {{- if eq $resource.type "route" }}
+      route:
+        host: localhost # FIXME with {{ $resource.params.path }}
+        path: {{ $resource.params.path }}
+        port: {{ $resource.params.port }}
+      {{ end }}
       {{ end }}
 {{ end }}

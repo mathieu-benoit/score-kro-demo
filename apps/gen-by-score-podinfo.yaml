@@ -3,20 +3,16 @@ apiVersion: v1
 kind: Namespace
 metadata:
     labels:
-        app.kubernetes.io/managed-by: argocd
+        app.kubernetes.io/managed-by: score-k8s
         pod-security.kubernetes.io/enforce: restricted
-    name: kro-man-podinfo
+    name: podinfo
 ---
 apiVersion: kro.run/v1alpha1
 kind: Workload
 metadata:
-    name: kro-man-podinfo
-    namespace: kro-man-podinfo
+    name: podinfo
+    namespace: podinfo
 spec:
-    rules:
-      - apiGroups: [""]
-        resources: ["secrets"]
-        verbs: ["get", "watch"]
     args:
         - --port=9898
         - --cert-path=/data/cert
@@ -32,7 +28,7 @@ spec:
         - name: PODINFO_UI_COLOR
           value: '#34577c'
         - name: PODINFO_UI_MESSAGE
-          value: ""
+          value: Hello, from ArgoCD, Kro and Score!
     image: ghcr.io/stefanprodan/podinfo:latest
     livenessProbe:
         httpGet:
@@ -49,6 +45,10 @@ spec:
         requests:
             cpu: 100m
             memory: 128Mi
+    route:
+        host: miniature-barnacle-7vvp6r4pjv53qwx-80.app.github.dev
+        path: /
+        port: 9898
     service:
         ports:
             - name: grpc
