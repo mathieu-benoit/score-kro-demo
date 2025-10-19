@@ -196,8 +196,8 @@ spec:
                   volumeMounts:
                     - name: data
                       mountPath: /data
-                  livenessProbe: ${schema.spec.?livenessProbe}
-                  readinessProbe: ${schema.spec.?readinessProbe}
+                  livenessProbe: ${schema.spec.livenessProbe}
+                  readinessProbe: ${schema.spec.readinessProbe}
     - id: hpa
       includeWhen:
         - ${has(schema.spec.hpa)}
