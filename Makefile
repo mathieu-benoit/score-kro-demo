@@ -41,7 +41,10 @@ deploy-simple: install-kro-workload
 ## Test Kubernetes resources after simple/score.yaml has been deployed.
 .PHONY: test-simple
 test-simple: deploy-simple
-	sleep 5
+	kubectl wait workload simple \
+		-n simple \
+		--for condition=InstanceSynced \
+		--timeout=90s
 	kubectl wait deployments/simple \
 		-n simple \
 		--for condition=Available \
@@ -51,7 +54,7 @@ test-simple: deploy-simple
 		-l app.kubernetes.io/name=simple \
 		--for condition=Ready \
 		--timeout=90s
-	kubectl get workload,all,httproute -n simple
+	kubectl get workload,all,sa,httproute -n simple
 
 ## Deploy podinfo/score.yaml to Kubernetes.
 .PHONY: deploy-podinfo
@@ -72,7 +75,10 @@ deploy-podinfo: install-kro-workload
 ## Test Kubernetes resources after podinfo/score.yaml has been deployed.
 .PHONY: test-podinfo
 test-podinfo: deploy-podinfo
-	sleep 5
+	kubectl wait workload podinfo \
+		-n podinfo \
+		--for condition=InstanceSynced \
+		--timeout=90s
 	kubectl wait deployments/podinfo \
 		-n podinfo \
 		--for condition=Available \
@@ -82,4 +88,4 @@ test-podinfo: deploy-podinfo
 		-l app.kubernetes.io/name=podinfo \
 		--for condition=Ready \
 		--timeout=90s
-	kubectl get workload,all,httproute -n podinfo
+	kubectl get workload,all,sa,httproute -n podinfo
