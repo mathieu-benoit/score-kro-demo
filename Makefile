@@ -20,6 +20,9 @@ kind-create-cluster:
 .PHONY: install-kro-workload
 install-kro-workload:
 	kubectl apply -f kro/workload.yaml
+	kubectl wait resourcegraphdefinition workload \
+		--for condition=Ready \
+		--timeout=90s
 
 ## Deploy simple/score.yaml to Kubernetes.
 .PHONY: deploy-simple
@@ -36,7 +39,7 @@ deploy-simple: install-kro-workload
 	kubectl apply -f manifests.yaml
 
 ## Test Kubernetes resources after simple/score.yaml has been deployed.
-.PHONY: deploy-simple
+.PHONY: test-simple
 test-simple: deploy-simple
 	sleep 5
 	kubectl wait deployments/simple \
@@ -67,7 +70,7 @@ deploy-podinfo: install-kro-workload
 	kubectl apply -f manifests.yaml
 
 ## Test Kubernetes resources after podinfo/score.yaml has been deployed.
-.PHONY: deploy-podinfo
+.PHONY: test-podinfo
 test-podinfo: deploy-podinfo
 	sleep 5
 	kubectl wait deployments/podinfo \
