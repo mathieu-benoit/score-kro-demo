@@ -16,9 +16,9 @@ spec:
 
       env: "[]envVar | default=[]"
 
-      livenessProbe: containerProbe
+      livenessProbe: containerProbe | required=true
 
-      readinessProbe: containerProbe
+      readinessProbe: containerProbe | required=true
 
       service:
         ports: "[]port | required"
@@ -196,8 +196,8 @@ spec:
                   volumeMounts:
                     - name: data
                       mountPath: /data
-                  livenessProbe: ${schema.spec.livenessProbe}
-                  readinessProbe: ${schema.spec.readinessProbe}
+                  livenessProbe: ${schema.spec.?livenessProbe}
+                  readinessProbe: ${schema.spec.?readinessProbe}
     - id: hpa
       includeWhen:
         - ${has(schema.spec.hpa)}

@@ -70,8 +70,6 @@
           - {{ $command }}
           {{ end }}
         {{ end }}
-      {{ else }}
-      livenessProbe: {}
       {{ end }}
       {{- if $firstContainer.readinessProbe }}
       readinessProbe:
@@ -87,8 +85,6 @@
           - {{ $command }}
           {{ end }}
         {{ end }}
-      {{ else }}
-      readinessProbe: {}
       {{ end }}
       {{- if $service }}
       service:
@@ -106,8 +102,6 @@
         host: localhost # FIXME with {{ $resource.params.path }}
         path: {{ $resource.params.path }}
         port: {{ $resource.params.port }}
-      {{ else }}
-      route: {}
       {{ end }}
       {{ end }}
 {{ end }}
