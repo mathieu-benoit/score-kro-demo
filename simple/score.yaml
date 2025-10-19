@@ -1,0 +1,14 @@
+apiVersion: score.dev/v1b1
+metadata:
+  name: simple
+containers:
+  simple:
+    image: .
+    livenessProbe:
+      httpGet:
+        port: 8080
+        path: /
+    readinessProbe:
+      httpGet:
+        port: 8080
+        path: /
