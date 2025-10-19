@@ -18,7 +18,9 @@ jobs:
           file: score-k8s
           token: ${{ secrets.GITHUB_TOKEN }}
           version: "latest"
-      - name: make k8s-monolith-test
+      - name: make kind-create-cluster
         run: |
           make kind-create-cluster
+      - name: make deploy-simple
+        run: |
           make deploy-simple

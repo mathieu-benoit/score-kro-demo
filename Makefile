@@ -28,6 +28,8 @@ deploy-simple:
 		--generate-namespace
 	kubectl apply -f manifests.yaml
 
+## Test Kubernetes resources after simple/score.yaml has been deployed.
+.PHONY: deploy-simple
 test-simple: deploy-simple
 	sleep 5
 	kubectl wait deployments/simple \
