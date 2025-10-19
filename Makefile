@@ -16,12 +16,19 @@ help:
 kind-create-cluster:
 	./scripts/setup-kind-cluster.sh
 
+## Install kro/workload.yaml to Kubernetes.
+.PHONY: install-kro-workload
+install-kro-workload:
+	kubectl apply -f kro/workload.yaml
+
 ## Deploy simple/score.yaml to Kubernetes.
 .PHONY: deploy-simple
-deploy-simple:
+deploy-simple: install-kro-workload
 	score-k8s init \
     	--no-sample \
-    	--no-default-provisioners
+    	--no-default-provisioners \
+    	--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
+    	--patch-templates ./score-k8s/kro-workload-patch-template.tpl
 	score-k8s generate simple/score.yaml \
 		--image ghcr.io/mathieu-benoit/my-sample-workload:latest \
 		--namespace simple \
@@ -42,3 +49,34 @@ test-simple: deploy-simple
 		--for condition=Ready \
 		--timeout=90s
 	kubectl get workload,all,httproute -n simple
+
+## Deploy podinfo/score.yaml to Kubernetes.
+.PHONY: deploy-podinfo
+deploy-podinfo: install-kro-workload
+	score-k8s init \
+    	--no-sample \
+    	--no-default-provisioners \
+    	--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
+    	--patch-templates ./score-k8s/kro-workload-patch-template.tpl \
+    	--provisioners ./score-k8s/kro-provisioners.yaml
+	score-k8s generate podinfo/score.yaml \
+		--image ghcr.io/stefanprodan/podinfo:latest \
+		--namespace podinfo \
+		--generate-namespace \
+    	--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Kro and Score!"
+	kubectl apply -f manifests.yaml
+
+## Test Kubernetes resources after podinfo/score.yaml has been deployed.
+.PHONY: deploy-podinfo
+test-podinfo: deploy-podinfo
+	sleep 5
+	kubectl wait deployments/podinfo \
+		-n podinfo \
+		--for condition=Available \
+		--timeout=90s
+	kubectl wait pods \
+		-n podinfo \
+		-l app.kubernetes.io/name=podinfo \
+		--for condition=Ready \
+		--timeout=90s
+	kubectl get workload,all,httproute -n podinfo

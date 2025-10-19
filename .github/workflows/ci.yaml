@@ -7,7 +7,7 @@ on:
   push:
     branches: [main]
 jobs:
-  ci-podinfo:
+  ci-simple:
     runs-on: ubuntu-latest
     steps:
       - name: checkout code
@@ -24,3 +24,20 @@ jobs:
       - name: make deploy-simple
         run: |
           make deploy-simple
+  ci-podinfo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v5
+      - name: install score-k8s
+        uses: score-spec/setup-score@v3
+        with:
+          file: score-k8s
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: "latest"
+      - name: make kind-create-cluster
+        run: |
+          make kind-create-cluster
+      - name: make deploy-podinfo
+        run: |
+          make deploy-podinfo
