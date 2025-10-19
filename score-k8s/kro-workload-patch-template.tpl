@@ -103,5 +103,12 @@
         path: {{ $resource.params.path }}
         port: {{ $resource.params.port }}
       {{ end }}
+      {{- if eq $resource.type "horizontal-pod-autoscaler" }}
+      hpa:
+        targetCPUUtilization: {{ $resource.params.targetCPUUtilizationPercentage | default 80 }}
+        targetMemoryUtilization: {{ $resource.params.targetMemoryUtilization | default 80 }}
+        minReplicas: {{ $resource.params.minReplicas | default 1 }}
+        maxReplicas: {{ $resource.params.maxReplicas | default 1 | max $resource.params.minReplicas }}
+      {{ end }}
       {{ end }}
 {{ end }}

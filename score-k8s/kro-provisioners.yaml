@@ -17,3 +17,12 @@
     host: {{ .State.instanceHostname }}
   expected_outputs:
     - host
+
+- uri: template://kro-provisioners/hpa
+  type: horizontal-pod-autoscaler
+  description: FIXME.
+  supported_params:
+    - maxReplicas
+    - minReplicas
+    - targetCPUUtilizationPercentage
+    - targetMemoryUtilizationPercentage
