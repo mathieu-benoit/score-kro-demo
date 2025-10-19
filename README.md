@@ -8,6 +8,7 @@ Prepare a local Kubernetes cluster:
 
 ```bash
 ./scripts/setup-kind-cluster.sh
+./scripts/setup-argocd.sh
 ```
 
 Apply a sample KRO ResourceGraphDefinition (RGD) and Custom Resource manually:
