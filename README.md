@@ -76,8 +76,8 @@ Let’s see how far we can go with KRO.
 
 ### How it works
 
-1. The **Platform Team** defines a ResourceGraphDefinition (RGD) `workload-app` including best practices like resource limits, probes, security context, and pod disruption budgets.
-2. **KRO** validates the `workload-app` definition and allows creation of `Workload` CustomResources (CR) from the RGD.
+1. The **Platform Team** defines a ResourceGraphDefinition (RGD) `workload` including best practices like resource limits, probes, security context, and pod disruption budgets.
+2. **KRO** validates the `workload` definition and allows creation of `Workload` CustomResources (CR) from the RGD.
 3. The **Developer** creates a new `Workload` CR defining app-specific values such as name, image, replicas, ports, and environment variables.
 4. **Argo CD** watches a Git repository folder and deploys the new `Workload` CR to the cluster.
 5. The **KRO Operator** observes these `Workload` CRs and generates all required Kubernetes resources defined in the RGD.
@@ -147,7 +147,7 @@ To improve it, we introduced [Score](https://score.dev/) — adding another laye
 
 ![Demo 2](images/demo-2.png)
 
-This way, Score can creates both the RGD `workload-app` and the CR `Workload`, simulating developer behavior while removing many KRO limitations.
+This way, Score can creates both the RGD `workload` and the CR `Workload`, simulating developer behavior while removing many KRO limitations.
 
 - score-k8s/kro-workload-patch-template.tpl ✅
 
