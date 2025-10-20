@@ -24,19 +24,19 @@
       {{ end }}
     spec:
       image: {{ $firstContainer.image }}
-      {{- if (gt (len $firstContainer.command) 0) }}
+      {{- if and $firstContainer.command (gt (len $firstContainer.command) 0) }}
       command:
         {{- range $i, $cmd := $firstContainer.command }}
         - {{ $cmd }}
         {{ end }}
       {{ end }}
-      {{- if (gt (len $firstContainer.args) 0) }}
+      {{- if and $firstContainer.args (gt (len $firstContainer.args) 0) }}
       args:
         {{- range $i, $arg := $firstContainer.args }}
         - {{ $arg }}
         {{ end }}
       {{ end }}
-      {{- if (gt (len $firstContainer.variables) 0) }}
+      {{- if and $firstContainer.variables (gt (len $firstContainer.variables) 0) }}
       env:
         {{- range $variableName, $variableValue := $firstContainer.variables }}
         - name: {{ $variableName }}
@@ -102,6 +102,13 @@
         host: localhost # FIXME with {{ $resource.params.path }}
         path: {{ $resource.params.path }}
         port: {{ $resource.params.port }}
+      {{ end }}
+      {{- if eq $resource.type "horizontal-pod-autoscaler" }}
+      hpa:
+        targetCPUUtilization: {{ $resource.params.targetCPUUtilizationPercentage | default 80 }}
+        targetMemoryUtilization: {{ $resource.params.targetMemoryUtilization | default 80 }}
+        minReplicas: {{ $resource.params.minReplicas | default 1 }}
+        maxReplicas: {{ $resource.params.maxReplicas | default 1 | max $resource.params.minReplicas }}
       {{ end }}
       {{ end }}
 {{ end }}
