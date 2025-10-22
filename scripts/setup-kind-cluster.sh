@@ -40,10 +40,10 @@ spec:
         from: All
 EOF
 
-# --- Install kro v0.4.1 (pinned version) ---
-KRO_VERSION="0.4.1"
+# --- Install kro v0.5.0 (pinned version) ---
+KRO_VERSION="0.5.0"
 
-helm install kro oci://ghcr.io/kro-run/kro/kro \
+helm install kro oci://registry.k8s.io/kro/charts/kro \
   --namespace kro \
   --create-namespace \
   --version "${KRO_VERSION}"
