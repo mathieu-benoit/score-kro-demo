@@ -28,8 +28,13 @@ spec:
         - name: PODINFO_UI_COLOR
           value: '#34577c'
         - name: PODINFO_UI_MESSAGE
-          value: Hello, from ArgoCD, Kro and Score!
-    image: ghcr.io/stefanprodan/podinfo:latest
+          value: Hello, from ArgoCD, Kro and Score
+    hpa:
+        maxReplicas: 4
+        minReplicas: 2
+        targetCPUUtilization: 70
+        targetMemoryUtilization: 80
+    image: ghcr.io/stefanprodan/podinfo:6.9.2
     livenessProbe:
         httpGet:
             path: /healthz

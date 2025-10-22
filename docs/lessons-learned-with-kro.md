@@ -7,6 +7,8 @@ Provide developers a simple way to deploy applications using a predefined `Custo
 
 You can easily predefine standard configurations (resource limits, probes, securityContext, etc.) for simple apps. But as soon as developers need to adjust basic values like environment variables or ports, we hit limitations — and documentation was lacking.
 
+We collected our learnings below.
+
 TOC:
 - [Generic Type Limitations](#generic-type-limitations)
 - [Complex types limitations](#complex-types-limitations)
@@ -57,7 +59,7 @@ spec:
       value: ""
 ```
 
-![Demo 1](images/demo-1.png)
+<img src="../images/demo-1.png" alt="rounded image" width="1000" style="border-radius:7%;" />
 
 You are limited to simple types (`string`, `integer`, `boolean`, `float`). For anything more complex (arrays, objects, maps), you should define custom types manually.
 
@@ -76,6 +78,8 @@ types:
 
 rbacRules: "[]rbacRule"
 ```
+
+So you can see. You need to create a new type which contains arrays of strings. And then you will create an array of this new type.
 
 Or nested maps:
 
@@ -134,13 +138,11 @@ You can version the RGD, but without an upgrade process, migration is painful �
 
 Using Score can help here, thanks to templating, versioning, and validation, but that also means skipping KRO entirely.
 
-## Kro is mature enough?
+## KRO is mature enough?
 
 We’re not against KRO — it’s a great idea — but for production-grade use cases, it feels too early. But it also still a young project.
 We wanted to understand why so many teams struggle with abstraction tools like KRO.
 Now we do — by feeling the pain ourselves.
-
-CODE
 
 BUT...
 
