@@ -7,7 +7,7 @@ spec:
     apiVersion: v1alpha1
     kind: Workload
     spec:
-      replicas: integer | default=1 minimum=1 maximum=50
+      replicas: integer | default=2 minimum=2 maximum=50
       image: string | required=true
       imagePullPolicy: string | default="IfNotPresent"
 
@@ -57,8 +57,10 @@ spec:
       runAsUser: integer | default=65532 minimum=1000
       runAsGroup: integer | default=65532 minimum=1000
       fsGroup: integer | default=65532 minimum=1
-      
+
       rbacRules: "[]rbacRule"
+
+      inClusterRedis: boolean | default=false
 
     types:
       port:
@@ -100,6 +102,7 @@ spec:
           selector:
             app.kubernetes.io/name: ${schema.metadata.name}
           ports: ${schema.spec.service.ports}
+
     - id: role
       includeWhen:
         - ${has(schema.spec.rbacRules)}
@@ -111,6 +114,7 @@ spec:
           labels:
             app.kubernetes.io/name: ${schema.metadata.name}
         rules: ${schema.spec.rbacRules}
+
     - id: roleBinding
       includeWhen:
         - ${has(schema.spec.rbacRules)}
@@ -128,6 +132,7 @@ spec:
           apiGroup: rbac.authorization.k8s.io
           kind: Role
           name: ${role.metadata.name}
+
     - id: serviceAccount
       template:
         apiVersion: v1
@@ -135,13 +140,7 @@ spec:
         metadata:
           name: ${schema.metadata.name}
         automountServiceAccountToken: ${schema.spec.automountSAToken}
-    # - id: serviceAccount2
-    #   template:
-    #     apiVersion: v1
-    #     kind: ServiceAccount
-    #     metadata:
-    #       name: ${schema.metadata.name}-2
-    #     automountServiceAccountToken: ${schema.spec.automountSAToken}
+
     - id: deployment
       template:
         apiVersion: apps/v1
@@ -198,6 +197,7 @@ spec:
                       mountPath: /data
                   livenessProbe: ${schema.spec.livenessProbe}
                   readinessProbe: ${schema.spec.readinessProbe}
+
     - id: hpa
       includeWhen:
         - ${has(schema.spec.hpa)}
@@ -226,6 +226,7 @@ spec:
                 target:
                   type: Utilization
                   averageUtilization: ${schema.spec.hpa.targetMemoryUtilization}
+
     - id: netpol
       includeWhen:
         - ${schema.spec.enableNetworkPolicy}
@@ -248,6 +249,7 @@ spec:
                   port: ${schema.spec.route.port}
           egress:
             - {}
+
     - id: pdb
       includeWhen:
         - ${schema.spec.enablePDB}
@@ -261,6 +263,7 @@ spec:
             matchLabels:
               app.kubernetes.io/name: ${schema.metadata.name}
           minAvailable: ${schema.spec.pdbMinAvailable}
+
     - id: httpRoute
       includeWhen:
         - ${has(schema.spec.route)}
@@ -285,3 +288,115 @@ spec:
               backendRefs:
                 - name: ${service.metadata.name}
                   port: ${schema.spec.route.port}
+
+    - id: redisConfig
+      includeWhen:
+        - ${schema.spec.inClusterRedis}
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${schema.metadata.name}-redis
+        data:
+          redis.conf: |
+            maxmemory 64mb
+            maxmemory-policy allkeys-lru
+            save ""
+            appendonly no
+
+    - id: redisService
+      includeWhen:
+        - ${schema.spec.inClusterRedis}
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.metadata.name}-redis
+          labels:
+            app: ${schema.metadata.name}-redis
+        spec:
+          type: ClusterIP
+          selector:
+            app: ${schema.metadata.name}-redis
+          ports:
+            - name: redis
+              port: 6379
+              protocol: TCP
+              targetPort: redis
+
+    - id: redisDeployment
+      includeWhen:
+        - ${schema.spec.inClusterRedis}
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${schema.metadata.name}-redis
+          labels:
+            app: ${schema.metadata.name}-redis
+        spec:
+          strategy:
+            type: Recreate
+          selector:
+            matchLabels:
+              app: ${schema.metadata.name}-redis
+          template:
+            metadata:
+              labels:
+                app: ${schema.metadata.name}-redis
+              annotations:
+                checksum/config: "a73a3f51cd535b6798451db6d0539ed35acdfde2fb322902147121da6a49d956"
+            spec:
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 65532
+                runAsGroup: 65532
+                fsGroup: 65532
+                seccompProfile:
+                  type: RuntimeDefault
+              containers:
+                - name: redis
+                  image: "redis:7.4-alpine"
+                  imagePullPolicy: IfNotPresent
+                  command:
+                    - redis-server
+                    - "/redis-master/redis.conf"
+                  ports:
+                    - name: redis
+                      containerPort: 6379
+                      protocol: TCP
+                  livenessProbe:
+                    tcpSocket:
+                      port: redis
+                    initialDelaySeconds: 5
+                    timeoutSeconds: 5
+                  readinessProbe:
+                    exec:
+                      command:
+                        - redis-cli
+                        - ping
+                    initialDelaySeconds: 5
+                    timeoutSeconds: 5
+                  resources:
+                    requests:
+                      cpu: "100m"
+                      memory: "32Mi"
+                  volumeMounts:
+                    - name: data
+                      mountPath: /var/lib/redis
+                    - name: config
+                      mountPath: /redis-master
+                  securityContext:
+                    allowPrivilegeEscalation: false
+                    readOnlyRootFilesystem: true
+                    capabilities:
+                      drop: ["ALL"]
+              volumes:
+                - name: data
+                  emptyDir: {}
+                - name: config
+                  configMap:
+                    name: ${schema.metadata.name}-redis
+                    items:
+                      - key: redis.conf
+                        path: redis.conf

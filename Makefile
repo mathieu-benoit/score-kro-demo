@@ -66,7 +66,7 @@ deploy-podinfo: install-kro-workload
     	--patch-templates ./score-k8s/kro-workload-patch-template.tpl \
     	--provisioners ./score-k8s/kro-provisioners.yaml
 	score-k8s generate podinfo/score.yaml \
-		--image ghcr.io/stefanprodan/podinfo:latest \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
 		--namespace podinfo \
 		--generate-namespace \
     	--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Kro and Score!"

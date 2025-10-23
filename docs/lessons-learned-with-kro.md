@@ -7,13 +7,17 @@ Provide developers a simple way to deploy applications using a predefined `Custo
 
 You can easily predefine standard configurations (resource limits, probes, securityContext, etc.) for simple apps. But as soon as developers need to adjust basic values like environment variables or ports, we hit limitations — and documentation was lacking.
 
+We collected our learnings below.
+
 TOC:
-- [Generic Type Limitations](#generic-type-limitations)
-- [Complex types limitations](#complex-types-limitations)
-- [Namespace Limitations](#namespace-limitations)
-- [Day-2 Operations Limitations](#day-2-operations-limitations)
-- [Kro is mature enough?](#kro-is-mature-enough)
-- [Improvement Ideas for KRO](#improvement-ideas-for-kro)
+- [Lessons learned with Kro](#lessons-learned-with-kro)
+    - [Generic Type Limitations](#generic-type-limitations)
+  - [Complex types limitations](#complex-types-limitations)
+  - [Namespace Limitations](#namespace-limitations)
+  - [Day-2 Operations Limitations](#day-2-operations-limitations)
+  - [A new attack surface? FIXME](#a-new-attack-surface-fixme)
+  - [Is KRO mature enough for production?](#is-kro-mature-enough-for-production)
+  - [Improvement Ideas for KRO](#improvement-ideas-for-kro)
 
 ### Generic Type Limitations
 
@@ -57,7 +61,7 @@ spec:
       value: ""
 ```
 
-![Demo 1](images/demo-1.png)
+<img src="../images/demo-1.png" alt="rounded image" width="1000" style="border-radius:7%;" />
 
 You are limited to simple types (`string`, `integer`, `boolean`, `float`). For anything more complex (arrays, objects, maps), you should define custom types manually.
 
@@ -76,6 +80,8 @@ types:
 
 rbacRules: "[]rbacRule"
 ```
+
+So you can see. You need to create a new type which contains arrays of strings. And then you will create an array of this new type.
 
 Or nested maps:
 
@@ -134,17 +140,21 @@ You can version the RGD, but without an upgrade process, migration is painful �
 
 Using Score can help here, thanks to templating, versioning, and validation, but that also means skipping KRO entirely.
 
-## Kro is mature enough?
+## A new attack surface? FIXME
+
+When many applications and infrastructure components are created from a single CustomResource definition based on an RGD, a small change to that RGD can have big consequences.
+
+If an attacker can modify the RGD, they could add a deployment that uses a malicious container image. That change would be applied to every CustomResource that depends on the RGD, effectively pushing the compromise to all derived workloads.
+This risk is amplified because there is often no version pinning or strong validation in place. There may be no SHA256 checks, no signature verification, and no easy way to require reviewed or signed changes. That makes it easy for a single unauthorized or unreviewed modification to escalate into a widespread security incident.
+
+This shows the need for strict access control, clear change review processes, and image verification to protect the platform and the teams that rely on it.
+
+## Is KRO mature enough for production?
 
 We’re not against KRO — it’s a great idea — but for production-grade use cases, it feels too early. But it also still a young project.
-We wanted to understand why so many teams struggle with abstraction tools like KRO.
-Now we do — by feeling the pain ourselves.
+We wanted to understand why so many teams struggle with abstraction tools like KRO and share the insights with you and also with the KRO project.
 
-CODE
-
-BUT...
-
-If KRO were just a tool for composing Kubernetes resources for simple applications, it would already be useful — but it can do much more. KRO allows you to compose any kind of resource within Kubernetes, including cloud resources such as AWS S3 Buckets or RDS Instances by using the AWS Controllers for Kubernetes (ACK) or GCP Config Connector (KCC) or Azure Service Operator (ASO).
+But you also should keep in mind, that just few tools like KRO exists, which are not a tools for composing Kubernetes resources for simple applications, it would already be useful — but it can do much more. KRO allows you to compose any kind of resource within Kubernetes, including cloud resources such as AWS S3 Buckets or RDS Instances by using the AWS Controllers for Kubernetes (ACK) or GCP Config Connector (KCC) or Azure Service Operator (ASO).
 
 KRO still has its limitations, but when combined with tools like Score, you can overcome many of them and get the best of both worlds. Of course, this adds another layer of complexity, so you need to decide what kind of self-service experience you want to provide to your developers.
 
