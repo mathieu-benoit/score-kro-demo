@@ -33,7 +33,7 @@ deploy-simple: install-kro-workload
     	--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
     	--patch-templates ./score-k8s/kro-workload-patch-template.tpl
 	score-k8s generate simple/score.yaml \
-		--image ghcr.io/mathieu-benoit/my-sample-workload:latest \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
 		--namespace simple \
 		--generate-namespace
 	kubectl apply -f manifests.yaml
@@ -55,6 +55,17 @@ test-simple: deploy-simple
 		--for condition=Ready \
 		--timeout=90s
 	kubectl get workload,all,sa,httproute -n simple
+
+## Deploy podinfo/score.yaml to Docker Compose.
+.PHONY: deploy-podinfo
+deploy-podinfo-compose:
+	score-compose init \
+		--no-sample \
+		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl
+	score-compose generate podinfo/score.yaml \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
+		--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score!"
+	docker compose up --build -d
 
 ## Deploy podinfo/score.yaml to Kubernetes.
 .PHONY: deploy-podinfo
