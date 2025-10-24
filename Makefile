@@ -33,7 +33,7 @@ deploy-simple: install-kro-workload
     	--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
     	--patch-templates ./score-k8s/kro-workload-patch-template.tpl
 	score-k8s generate simple/score.yaml \
-		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
+		--image ghcr.io/mathieu-benoit/my-sample-workload:latest \
 		--namespace simple \
 		--generate-namespace
 	kubectl apply -f manifests.yaml
