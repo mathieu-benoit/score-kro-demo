@@ -61,7 +61,8 @@ test-simple: deploy-simple
 deploy-podinfo-compose:
 	score-compose init \
 		--no-sample \
-		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl
+		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl \
+		--provisioners https://raw.githubusercontent.com/score-spec/community-provisioners/refs/heads/main/horizontal-pod-autoscaler/score-compose/10-hpa.provisioners.yaml
 	score-compose generate podinfo/score.yaml \
 		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
 		--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score!"
