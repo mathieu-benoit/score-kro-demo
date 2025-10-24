@@ -21,9 +21,9 @@ jobs:
       - name: make kind-create-cluster
         run: |
           make kind-create-cluster
-      - name: make deploy-simple
+      - name: make test-simple
         run: |
-          make deploy-simple
+          make test-simple
   ci-podinfo-compose:
     runs-on: ubuntu-latest
     steps:
@@ -52,6 +52,6 @@ jobs:
       - name: make kind-create-cluster
         run: |
           make kind-create-cluster
-      - name: make deploy-podinfo
+      - name: make test-podinfo
         run: |
-          make deploy-podinfo
+          make test-podinfo
