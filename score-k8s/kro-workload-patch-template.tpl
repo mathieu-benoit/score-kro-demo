@@ -110,5 +110,8 @@
         minReplicas: {{ $resource.params.minReplicas | default 1 }}
         maxReplicas: {{ $resource.params.maxReplicas | default 1 | max $resource.params.minReplicas }}
       {{ end }}
+      {{- if eq $resource.type "redis" }}
+      inClusterRedis: true
+      {{ end }}
       {{ end }}
 {{ end }}

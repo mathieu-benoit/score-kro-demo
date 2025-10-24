@@ -26,3 +26,17 @@
     - minReplicas
     - targetCPUUtilizationPercentage
     - targetMemoryUtilizationPercentage
+
+- uri: template://kro-provisioners/redis
+  type: redis
+  description: FIXME.
+  outputs: |
+    host: {{ encodeSecretRef (printf "%s-redis-outputs" .SourceWorkload) "host" }}
+    port: {{ encodeSecretRef (printf "%s-redis-outputs" .SourceWorkload) "port" }}
+    username: {{ encodeSecretRef (printf "%s-redis-outputs" .SourceWorkload) "username" }}
+    password: {{ encodeSecretRef (printf "%s-redis-outputs" .SourceWorkload) "password" }}
+  expected_outputs:
+    - host
+    - port
+    - username
+    - password

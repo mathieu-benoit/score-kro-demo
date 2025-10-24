@@ -400,3 +400,17 @@ spec:
                     items:
                       - key: redis.conf
                         path: redis.conf
+
+    - id: redisOutputsSecrets
+      includeWhen:
+        - ${schema.spec.inClusterRedis}
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.metadata.name}-redis-outputs
+        stringData:
+          host: ${schema.metadata.name}-redis
+          port: 6379
+          username: "default"
+          password: {{ .State.password | b64enc }}
