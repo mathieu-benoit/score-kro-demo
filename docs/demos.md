@@ -127,10 +127,20 @@ To overcome these limitations, we need to add another layer of abstraction.
 
 ## Demo #3 - Score - FIXME
 
+What if you want:
+- to inject named env vars based on `redis`, etc.'s outputs?
+- to dynamically generate names, passwords, etc.?
+- 2+ `route`?
+- 2+ `redis`?
+- 1 `redis` + 1 `posgres` + 1 `mysql`?
+- shared `redis` between 2 workloads?
+- in-cluster in development, but GCP Memorystore in staging and production?
+
+--> The number of Kro's CRs will explode/increase a lot. Overlap, maintainance, etc.
+
 To improve it, we introduced [Score](https://score.dev/) — adding another layer on top of KRO to generate `Workload` CRs dynamically using Go templating behind the scenes.
 
 So, while KRO looks static, Score adds dynamic flexibility through templating. The created RDG is like you execute `helm template` and get the final manifest.
-
 
 <img src="../images/demo-2.png" alt="rounded image" width="1000" style="border-radius:7%;" />
 

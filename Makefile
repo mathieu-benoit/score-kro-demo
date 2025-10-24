@@ -89,3 +89,37 @@ test-podinfo: deploy-podinfo
 		--for condition=Ready \
 		--timeout=90s
 	kubectl get workload,all,sa,httproute -n podinfo
+
+## Deploy podinfo-with-redis/score.yaml to Kubernetes.
+.PHONY: deploy-redis
+deploy-redis: install-kro-workload
+	score-k8s init \
+    	--no-sample \
+    	--no-default-provisioners \
+    	--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
+    	--patch-templates ./score-k8s/kro-workload-patch-template.tpl \
+    	--provisioners ./score-k8s/kro-provisioners.yaml
+	score-k8s generate podinfo-with-redis/score.yaml \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
+		--namespace redis \
+		--generate-namespace \
+    	--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Kro and Score, with Redis!"
+	kubectl apply -f manifests.yaml
+
+## Test Kubernetes resources after podinfo-with-redis/score.yaml has been deployed.
+.PHONY: test-redis
+test-redis: deploy-redis
+	kubectl wait workload podinfo \
+		-n redis \
+		--for condition=InstanceSynced \
+		--timeout=90s
+	kubectl wait deployments/podinfo \
+		-n redis \
+		--for condition=Available \
+		--timeout=90s
+	kubectl wait pods \
+		-n redis \
+		-l app.kubernetes.io/name=podinfo \
+		--for condition=Ready \
+		--timeout=90s
+	kubectl get workload,all,sa,httproute,secret -n redis

@@ -1,0 +1,68 @@
+apiVersion: score.dev/v1b1
+metadata:
+  name: podinfo
+service:
+  ports:
+    http:
+      port: 9898
+      targetPort: 9898
+      protocol: TCP
+    http-metrics:
+      port: 9797
+      targetPort: 9797
+      protocol: TCP
+    grpc:
+      port: 9999
+      targetPort: 9999
+      protocol: TCP
+containers:
+  podinfo:
+    image: .
+    command:
+      - ./podinfo
+    args:
+      - --port=9898
+      - --cert-path=/data/cert
+      - --port-metrics=9797
+      - --grpc-port=9999
+      - --grpc-service-name=podinfo
+      - --level=info
+      - --random-delay=false
+      - --random-error=false
+      - --cache-server=$REDIS_CONNECTION
+    variables:
+      PODINFO_UI_COLOR: "#34577c"
+      PODINFO_UI_MESSAGE: ""
+      REDIS_CONNECTION: tcp://${resources.my-redis.host}:${resources.my-redis.port}@${resources.my-redis.username}:${resources.my-redis.password}
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+    livenessProbe:
+      httpGet:
+        port: 9898
+        path: /healthz
+    readinessProbe:
+      httpGet:
+        port: 9898
+        path: /readyz
+resources:
+  redis:
+    type: redis
+  hpa:
+    type: horizontal-pod-autoscaler
+    params:
+      minReplicas: 2
+      maxReplicas: 4
+      targetCPUUtilizationPercentage: 70
+  dns:
+    type: dns
+  route:
+    type: route
+    params:
+      host: ${resources.dns.host}
+      path: /
+      port: 9898
