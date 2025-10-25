@@ -71,7 +71,6 @@ spec:
       envVar:
         name: string
         value: string
-        valueFrom:
       containerProbe:
         httpGet:
           port: integer | required=true minimum=1 maximum=65535
