@@ -71,6 +71,7 @@ spec:
       envVar:
         name: string
         value: string
+        valueFrom:
       containerProbe:
         httpGet:
           port: integer | required=true minimum=1 maximum=65535
@@ -180,7 +181,7 @@ spec:
                 - name: data
                   emptyDir: {}
               containers:
-                - name: ${schema.spec.name}
+                - name: ${schema.metadata.name}
                   image: ${schema.spec.image}
                   imagePullPolicy: ${schema.spec.imagePullPolicy}
                   securityContext:
