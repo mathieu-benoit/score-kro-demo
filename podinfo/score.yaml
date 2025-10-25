@@ -51,7 +51,7 @@ resources:
   hpa:
     type: horizontal-pod-autoscaler
     params:
-      minReplicas: 2
+      minReplicas: 1
       maxReplicas: 4
       targetCPUUtilizationPercentage: 70
   dns:

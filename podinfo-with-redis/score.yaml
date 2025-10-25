@@ -33,7 +33,7 @@ containers:
     variables:
       PODINFO_UI_COLOR: "#34577c"
       PODINFO_UI_MESSAGE: ""
-      REDIS_CONNECTION: tcp://${resources.my-redis.host}:${resources.my-redis.port}@${resources.my-redis.username}:${resources.my-redis.password}
+      REDIS_CONNECTION: tcp://${resources.cache.host}:${resources.cache.port}@${resources.cache.username}:${resources.cache.password}
     resources:
       limits:
         memory: "512Mi"
@@ -50,7 +50,7 @@ containers:
         port: 9898
         path: /readyz
 resources:
-  redis:
+  cache:
     type: redis
   hpa:
     type: horizontal-pod-autoscaler
