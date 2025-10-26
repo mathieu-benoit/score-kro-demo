@@ -33,7 +33,7 @@ containers:
     variables:
       PODINFO_UI_COLOR: "#34577c"
       PODINFO_UI_MESSAGE: ""
-      REDIS_CONNECTION: tcp://${resources.cache.host}:${resources.cache.port}@${resources.cache.username}:${resources.cache.password}
+      REDIS_CONNECTION: tcp://${resources.cache.host}:${resources.cache.port},user=${resources.cache.username},password=${resources.cache.password}
     resources:
       limits:
         memory: "512Mi"
@@ -55,7 +55,7 @@ resources:
   hpa:
     type: horizontal-pod-autoscaler
     params:
-      minReplicas: 2
+      minReplicas: 1
       maxReplicas: 4
       targetCPUUtilizationPercentage: 70
   dns:
