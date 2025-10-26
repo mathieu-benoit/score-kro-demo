@@ -1,5 +1,6 @@
+{{ $workloadNames := keys .Workloads }}
 {{ range $i, $m := (reverse .Manifests) }}
-{{ if ne $m.kind "Namespace" }}
+{{ if and (ne $m.kind "Namespace") (and (or (eq $m.kind "Deployment") (eq $m.kind "Service")) (has $m.metadata.name $workloadNames)) }}
 {{ $i := sub (len $.Manifests) (add $i 1) }}
 - op: delete
   path: {{ $i }}
