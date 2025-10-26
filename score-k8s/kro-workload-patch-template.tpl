@@ -99,7 +99,7 @@
       {{- range $resourceName, $resource := $resources }}
       {{- if eq $resource.type "route" }}
       route:
-        host: localhost # FIXME with {{ $resource.params.host }}
+        host: {{ substituteValue $name $resource.params.host }}
         path: {{ $resource.params.path }}
         port: {{ $resource.params.port }}
       {{ end }}
