@@ -112,6 +112,18 @@ test-podinfo: deploy-podinfo
 		--timeout=90s
 	kubectl get workload,all,sa,httproute -n podinfo
 
+## Deploy podinfo-with-redis/score.yaml to Docker Compose.
+.PHONY: deploy-redis-compose
+deploy-redis-compose:
+	score-compose init \
+		--no-sample \
+		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl \
+		--provisioners https://raw.githubusercontent.com/score-spec/community-provisioners/refs/heads/main/horizontal-pod-autoscaler/score-compose/10-hpa.provisioners.yaml
+	score-compose generate podinfo-with-redis/score.yaml \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
+		--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score, with Redis!"
+	docker compose up --build -d
+
 ## Deploy podinfo-with-redis/score.yaml to Kubernetes.
 .PHONY: deploy-redis
 deploy-redis: install-kro-workload
