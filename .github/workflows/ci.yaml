@@ -83,3 +83,20 @@ jobs:
       - name: make deploy-redis-compose
         run: |
           make deploy-redis-compose
+  ci-redis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v5
+      - name: install score-k8s
+        uses: score-spec/setup-score@v3
+        with:
+          file: score-k8s
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: "latest"
+      - name: make kind-create-cluster
+        run: |
+          make kind-create-cluster
+      - name: make test-redis
+        run: |
+          make test-redis
