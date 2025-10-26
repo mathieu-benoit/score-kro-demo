@@ -317,11 +317,11 @@ spec:
         metadata:
           name: ${schema.metadata.name}-redis
           labels:
-            app: ${schema.metadata.name}-redis
+            app.kubernetes.io/name: ${schema.metadata.name}-redis
         spec:
           type: ClusterIP
           selector:
-            app: ${schema.metadata.name}-redis
+            app.kubernetes.io/name: ${schema.metadata.name}-redis
           ports:
             - name: redis
               port: 6379
@@ -337,19 +337,17 @@ spec:
         metadata:
           name: ${schema.metadata.name}-redis
           labels:
-            app: ${schema.metadata.name}-redis
+            app.kubernetes.io/name: ${schema.metadata.name}-redis
         spec:
           strategy:
             type: Recreate
           selector:
             matchLabels:
-              app: ${schema.metadata.name}-redis
+              app.kubernetes.io/name: ${schema.metadata.name}-redis
           template:
             metadata:
               labels:
-                app: ${schema.metadata.name}-redis
-              annotations:
-                checksum/config: "a73a3f51cd535b6798451db6d0539ed35acdfde2fb322902147121da6a49d956"
+                app.kubernetes.io/name: ${schema.metadata.name}-redis
             spec:
               securityContext:
                 runAsNonRoot: true

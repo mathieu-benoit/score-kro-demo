@@ -1,6 +1,6 @@
 - uri: template://kro-provisioners/route
   type: route
-  description: Defines the params of the Route resource type (the actual route implementation is done in Kro's RGD).
+  description: Defines the params of the Route resource type (the actual route deployment is done in Kro's RGD).
   supported_params:
     - host
     - port
@@ -20,7 +20,7 @@
 
 - uri: template://kro-provisioners/hpa
   type: horizontal-pod-autoscaler
-  description: Defines the params of the HPA resource type (the actual HPA implementation is done in Kro's RGD).
+  description: Defines the params of the HPA resource type (the actual HPA deployment is done in Kro's RGD).
   supported_params:
     - maxReplicas
     - minReplicas
@@ -29,7 +29,7 @@
 
 - uri: template://kro-provisioners/redis
   type: redis
-  description: Defines the params and outputs (as secret references) of the Redis resource type (the actual Redis implementation is done in Kro's RGD).
+  description: Defines the params and outputs (as secret references) of the Redis resource type (the actual Redis deployment is done in Kro's RGD).
   outputs: |
     host: {{ encodeSecretRef (printf "%s-redis-outputs" .SourceWorkload) "host" }}
     port: {{ encodeSecretRef (printf "%s-redis-outputs" .SourceWorkload) "port" }}

@@ -147,6 +147,15 @@ test-redis: deploy-redis
 		-n redis \
 		--for condition=InstanceSynced \
 		--timeout=90s
+	kubectl wait deployments/podinfo-redis \
+		-n redis \
+		--for condition=Available \
+		--timeout=90s
+	kubectl wait pods \
+		-n redis \
+		-l app.kubernetes.io/name=podinfo-redis \
+		--for condition=Ready \
+		--timeout=90s
 	kubectl wait deployments/podinfo \
 		-n redis \
 		--for condition=Available \
