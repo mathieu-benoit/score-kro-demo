@@ -40,7 +40,16 @@
       env:
         {{- range $variableName, $variableValue := $firstContainer.variables }}
         - name: {{ $variableName }}
-          value: "{{ $variableValue }}"
+          {{ $value := substituteValue $name $variableValue }}
+          {{- if and (hasPrefix "\U0001F510\U0001F4AC" $value) (hasSuffix "\U0001F4AC\U0001F510" $value) }}
+          {{ $trimmedValue := $value | trimPrefix "\U0001F510\U0001F4AC" | trimSuffix "\U0001F4AC\U0001F510" }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ index ( $trimmedValue | splitList "_" ) 0 }}
+              key: {{ index ( $trimmedValue | splitList "_" ) 1 }}
+          {{- else }}
+          value: {{ $value }}
+          {{ end }}
         {{ end }}
       {{ end }}
       {{- if $firstContainer.resources }}

@@ -69,8 +69,12 @@ spec:
         protocol: string | enum="TCP,UDP" default="TCP"
         targetPort: integer | minimum=1 maximum=65535
       envVar:
-        name: string
+        name: string | required=true
         value: string
+        valueFrom:
+          secretKeyRef:
+            name: string
+            key: string
       containerProbe:
         httpGet:
           port: integer | required=true minimum=1 maximum=65535
