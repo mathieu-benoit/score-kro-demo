@@ -24,6 +24,16 @@ install-kro-workload:
 		--for condition=Ready \
 		--timeout=90s
 
+## Deploy simple/score.yaml to Docker Compose.
+.PHONY: deploy-simple-compose
+deploy-simple-compose:
+	score-compose init \
+		--no-sample \
+		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl
+	score-compose generate simple/score.yaml \
+		--image ghcr.io/mathieu-benoit/my-sample-workload:latest \
+	docker compose up --build -d
+
 ## Deploy simple/score.yaml to Kubernetes.
 .PHONY: deploy-simple
 deploy-simple: install-kro-workload
@@ -57,7 +67,7 @@ test-simple: deploy-simple
 	kubectl get workload,all,sa,httproute -n simple
 
 ## Deploy podinfo/score.yaml to Docker Compose.
-.PHONY: deploy-podinfo
+.PHONY: deploy-podinfo-compose
 deploy-podinfo-compose:
 	score-compose init \
 		--no-sample \
