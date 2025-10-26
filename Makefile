@@ -31,7 +31,7 @@ deploy-simple-compose:
 		--no-sample \
 		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl
 	score-compose generate simple/score.yaml \
-		--image ghcr.io/mathieu-benoit/my-sample-workload:latest \
+		--image ghcr.io/mathieu-benoit/my-sample-workload:latest
 	docker compose up --build -d
 
 ## Deploy simple/score.yaml to Kubernetes.
