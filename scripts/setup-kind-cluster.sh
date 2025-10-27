@@ -57,7 +57,7 @@ helm upgrade kro oci://registry.k8s.io/kro/charts/kro \
 echo "✅ Kro successfully deployed"
 
 # --- Install KCC ---
-# For now, we don't install KCC per se, we just apply the Memorystore (Redis) CRD.
+# For now, we don't install KCC per se, we just apply the Memorystore (Redis) CRD needed to deploy our own Workload CR.
 kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/k8s-config-connector/refs/heads/master/crds/redis_v1beta1_redisinstance.yaml
 
 echo "✅ KCC's Memorystore CRD successfully deployed"
