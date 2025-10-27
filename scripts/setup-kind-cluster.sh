@@ -13,6 +13,8 @@ nodes:
     protocol: TCP
 EOF
 
+echo "✅ Kind cluster successfully created"
+
 # --- Install Gateway API + NGINX Gateway Fabric ---
 GATEWAY_API_VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/gateway-api/releases/latest | jq -r .tag_name)
 kubectl apply \
@@ -41,6 +43,8 @@ spec:
         from: All
 EOF
 
+echo "✅ Gateway API successfully deployed"
+
 # --- Install kro v0.5.0 (pinned version) ---
 KRO_VERSION="0.5.0"
 
@@ -50,9 +54,18 @@ helm upgrade kro oci://registry.k8s.io/kro/charts/kro \
   --install \
   --version "${KRO_VERSION}"
 
-echo "⏳ Waiting for kro to be ready..."
-echo "Kro successfully deployed"
+echo "✅ Kro successfully deployed"
+
+# --- Install latest Config Connector (KCC) version  ---
+gcloud storage cp gs://configconnector-operator/latest/release-bundle.tar.gz release-bundle.tar.gz
+tar zxvf release-bundle.tar.gz
+kubectl apply -f operator-system/configconnector-operator.yaml
+rm -rf operator-system
+rm release-bundle.tar.gz
+rm -rf samples
+
+echo "✅ KCC successfully deployed"
 
 echo ""
-echo "✅ Setup complete: Gateway API, NGINX Gateway Fabric and kro are installed."
+echo "✅ Setup complete: Gateway API, NGINX Gateway Fabric, kro and KCC are installed."
 echo ""
