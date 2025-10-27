@@ -18,9 +18,10 @@ GATEWAY_API_VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/gate
 kubectl apply \
     -f https://github.com/kubernetes-sigs/gateway-api/releases/download/${GATEWAY_API_VERSION}/standard-install.yaml
 
-helm install ngf oci://ghcr.io/nginxinc/charts/nginx-gateway-fabric \
+helm upgrade ngf oci://ghcr.io/nginxinc/charts/nginx-gateway-fabric \
     --create-namespace \
     -n nginx-gateway \
+    --install \
     --set service.type=NodePort \
     --set-json 'service.ports=[{"port":80,"nodePort":31000}]'
 
@@ -43,9 +44,10 @@ EOF
 # --- Install kro v0.5.0 (pinned version) ---
 KRO_VERSION="0.5.0"
 
-helm install kro oci://registry.k8s.io/kro/charts/kro \
+helm upgrade kro oci://registry.k8s.io/kro/charts/kro \
   --namespace kro \
   --create-namespace \
+  --install \
   --version "${KRO_VERSION}"
 
 echo "⏳ Waiting for kro to be ready..."

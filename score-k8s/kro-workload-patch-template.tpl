@@ -1,5 +1,6 @@
+{{ $workloadNames := keys .Workloads }}
 {{ range $i, $m := (reverse .Manifests) }}
-{{ if ne $m.kind "Namespace" }}
+{{ if and (ne $m.kind "Namespace") (and (or (eq $m.kind "Deployment") (eq $m.kind "Service")) (has $m.metadata.name $workloadNames)) }}
 {{ $i := sub (len $.Manifests) (add $i 1) }}
 - op: delete
   path: {{ $i }}
@@ -40,7 +41,16 @@
       env:
         {{- range $variableName, $variableValue := $firstContainer.variables }}
         - name: {{ $variableName }}
-          value: "{{ $variableValue }}"
+          {{ $value := substituteValue $name $variableValue }}
+          {{- if and (hasPrefix "\U0001F510\U0001F4AC" $value) (hasSuffix "\U0001F4AC\U0001F510" $value) }}
+          {{ $trimmedValue := $value | trimPrefix "\U0001F510\U0001F4AC" | trimSuffix "\U0001F4AC\U0001F510" }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ index ( $trimmedValue | splitList "_" ) 0 }}
+              key: {{ index ( $trimmedValue | splitList "_" ) 1 }}
+          {{- else }}
+          value: {{ $value }}
+          {{ end }}
         {{ end }}
       {{ end }}
       {{- if $firstContainer.resources }}
@@ -99,7 +109,7 @@
       {{- range $resourceName, $resource := $resources }}
       {{- if eq $resource.type "route" }}
       route:
-        host: localhost # FIXME with {{ $resource.params.path }}
+        host: {{ substituteValue $name $resource.params.host }}
         path: {{ $resource.params.path }}
         port: {{ $resource.params.port }}
       {{ end }}
@@ -109,6 +119,9 @@
         targetMemoryUtilization: {{ $resource.params.targetMemoryUtilization | default 80 }}
         minReplicas: {{ $resource.params.minReplicas | default 1 }}
         maxReplicas: {{ $resource.params.maxReplicas | default 1 | max $resource.params.minReplicas }}
+      {{ end }}
+      {{- if eq $resource.type "redis" }}
+      inClusterRedis: true
       {{ end }}
       {{ end }}
 {{ end }}

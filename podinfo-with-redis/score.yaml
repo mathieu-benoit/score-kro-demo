@@ -29,9 +29,14 @@ containers:
       - --level=info
       - --random-delay=false
       - --random-error=false
+      - --cache-server=tcp://$(REDIS_USER):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)
     variables:
       PODINFO_UI_COLOR: "#34577c"
       PODINFO_UI_MESSAGE: ""
+      REDIS_HOST: ${resources.cache.host}
+      REDIS_PORT: ${resources.cache.port}
+      REDIS_USER: ${resources.cache.username}
+      REDIS_PASSWORD: ${resources.cache.password}
     resources:
       limits:
         memory: "512Mi"
@@ -48,6 +53,8 @@ containers:
         port: 9898
         path: /readyz
 resources:
+  cache:
+    type: redis
   hpa:
     type: horizontal-pod-autoscaler
     params:

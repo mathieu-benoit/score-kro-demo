@@ -23,9 +23,10 @@ helm repo update >/dev/null
 ARGOCD_CHART_VERSION="8.5.3"
 ARGOCD_NS="argocd"
 
-helm install argocd argo/argo-cd \
+helm upgrade argocd argo/argo-cd \
   --namespace "${ARGOCD_NS}" \
   --create-namespace \
+  --install \
   --version "${ARGOCD_CHART_VERSION}" \
   --set server.service.type=ClusterIP
 

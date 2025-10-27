@@ -24,6 +24,16 @@ install-kro-workload:
 		--for condition=Ready \
 		--timeout=90s
 
+## Deploy simple/score.yaml to Docker Compose.
+.PHONY: deploy-simple-compose
+deploy-simple-compose:
+	score-compose init \
+		--no-sample \
+		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl
+	score-compose generate simple/score.yaml \
+		--image ghcr.io/mathieu-benoit/my-sample-workload:latest
+	docker compose up --build -d
+
 ## Deploy simple/score.yaml to Kubernetes.
 .PHONY: deploy-simple
 deploy-simple: install-kro-workload
@@ -55,6 +65,19 @@ test-simple: deploy-simple
 		--for condition=Ready \
 		--timeout=90s
 	kubectl get workload,all,sa,httproute -n simple
+
+## Deploy podinfo/score.yaml to Docker Compose.
+.PHONY: deploy-podinfo-compose
+deploy-podinfo-compose:
+	score-compose init \
+		--no-sample \
+		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl \
+		--provisioners https://raw.githubusercontent.com/score-spec/community-provisioners/refs/heads/main/horizontal-pod-autoscaler/score-compose/10-hpa.provisioners.yaml
+	score-compose generate podinfo/score.yaml \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
+		--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score!"
+	docker compose up --build -d
+	curl localhost:8080 -H "Host: $$(score-compose resources get-outputs dns.default#podinfo.dns --format '{{ .host }}')"
 
 ## Deploy podinfo/score.yaml to Kubernetes.
 .PHONY: deploy-podinfo
@@ -89,3 +112,61 @@ test-podinfo: deploy-podinfo
 		--for condition=Ready \
 		--timeout=90s
 	kubectl get workload,all,sa,httproute -n podinfo
+	curl localhost -H "Host: $$(score-k8s resources get-outputs dns.default#podinfo.dns --format '{{ .host }}')"
+
+## Deploy podinfo-with-redis/score.yaml to Docker Compose.
+.PHONY: deploy-redis-compose
+deploy-redis-compose:
+	score-compose init \
+		--no-sample \
+		--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl \
+		--provisioners https://raw.githubusercontent.com/score-spec/community-provisioners/refs/heads/main/horizontal-pod-autoscaler/score-compose/10-hpa.provisioners.yaml
+	score-compose generate podinfo-with-redis/score.yaml \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
+		--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score, with Redis!"
+	docker compose up --build -d
+	curl localhost:8080 -H "Host: $$(score-compose resources get-outputs dns.default#podinfo.dns --format '{{ .host }}')"
+
+## Deploy podinfo-with-redis/score.yaml to Kubernetes.
+.PHONY: deploy-redis
+deploy-redis: install-kro-workload
+	score-k8s init \
+    	--no-sample \
+    	--no-default-provisioners \
+    	--patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
+    	--patch-templates ./score-k8s/kro-workload-patch-template.tpl \
+    	--provisioners ./score-k8s/kro-provisioners.yaml
+	score-k8s generate podinfo-with-redis/score.yaml \
+		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
+		--namespace redis \
+		--generate-namespace \
+    	--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Kro and Score, with Redis!"
+	kubectl apply -f manifests.yaml
+
+## Test Kubernetes resources after podinfo-with-redis/score.yaml has been deployed.
+.PHONY: test-redis
+test-redis: deploy-redis
+	kubectl wait workload podinfo \
+		-n redis \
+		--for condition=InstanceSynced \
+		--timeout=90s
+	kubectl wait deployments/podinfo-redis \
+		-n redis \
+		--for condition=Available \
+		--timeout=90s
+	kubectl wait pods \
+		-n redis \
+		-l app.kubernetes.io/name=podinfo-redis \
+		--for condition=Ready \
+		--timeout=90s
+	kubectl wait deployments/podinfo \
+		-n redis \
+		--for condition=Available \
+		--timeout=90s
+	kubectl wait pods \
+		-n redis \
+		-l app.kubernetes.io/name=podinfo \
+		--for condition=Ready \
+		--timeout=90s
+	kubectl get workload,all,sa,httproute,secret -n redis
+	curl localhost -H "Host: $$(score-k8s resources get-outputs dns.default#podinfo.dns --format '{{ .host }}')"
