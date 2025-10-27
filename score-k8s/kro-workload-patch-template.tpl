@@ -122,6 +122,7 @@
       {{ end }}
       {{- if eq $resource.type "redis" }}
       inClusterRedis: true
+      #memorystoreRedis: true
       {{ end }}
       {{ end }}
 {{ end }}

@@ -61,6 +61,7 @@ spec:
       rbacRules: "[]rbacRule"
 
       inClusterRedis: boolean | default=false
+      memorystoreRedis: boolean | default=false
 
     types:
       port:
@@ -416,3 +417,33 @@ spec:
           port: "6379"
           username: "default"
           password: "default"
+    
+    - id: memorystore
+      includeWhen:
+        - ${schema.spec.memorystoreRedis}
+      template:
+        apiVersion: redis.cnrm.cloud.google.com/v1beta1
+        kind: RedisInstance
+        metadata:
+          name: ${schema.metadata.name}-redis
+        spec:
+          redisVersion: REDIS_7_2
+          region: us-central1
+          tier: BASIC
+          memorySizeGb: 16
+          authEnabled: true
+          authorizedNetwork: default
+
+    - id: memorystoreOutputsSecrets
+      includeWhen:
+        - ${schema.spec.memorystoreRedis}
+      template:
+        apiVersion: v1
+        kind: Secret
+        metadata:
+          name: ${schema.metadata.name}-memorystore-outputs
+        stringData:
+          host: ${memorystore.status.host}
+          port: ${memorystore.status.port}
+          username: "default"
+          password: ${memorystore.status.observedState.authString}
