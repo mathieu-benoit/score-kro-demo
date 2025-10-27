@@ -123,6 +123,7 @@ deploy-redis-compose:
 		--image ghcr.io/stefanprodan/podinfo:6.9.2 \
 		--override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score, with Redis!"
 	docker compose up --build -d
+	curl localhost:8080 -H "Host: $$(score-compose resources get-outputs dns.default#podinfo.dns --format '{{ .host }}')"
 
 ## Deploy podinfo-with-redis/score.yaml to Kubernetes.
 .PHONY: deploy-redis
@@ -166,3 +167,4 @@ test-redis: deploy-redis
 		--for condition=Ready \
 		--timeout=90s
 	kubectl get workload,all,sa,httproute,secret -n redis
+	curl localhost -H "Host: $$(score-k8s resources get-outputs dns.default#podinfo.dns --format '{{ .host }}')"
