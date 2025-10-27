@@ -96,7 +96,6 @@ jobs:
           file: score-k8s
           token: ${{ secrets.GITHUB_TOKEN }}
           version: "latest"
-      - uses: google-github-actions/setup-gcloud@v3
       - name: make kind-create-cluster
         run: |
           make kind-create-cluster

@@ -56,16 +56,12 @@ helm upgrade kro oci://registry.k8s.io/kro/charts/kro \
 
 echo "✅ Kro successfully deployed"
 
-# --- Install latest Config Connector (KCC) version  ---
-gcloud storage cp gs://configconnector-operator/latest/release-bundle.tar.gz release-bundle.tar.gz
-tar zxvf release-bundle.tar.gz
-kubectl apply -f operator-system/configconnector-operator.yaml
-rm -rf operator-system
-rm release-bundle.tar.gz
-rm -rf samples
+# --- Install KCC ---
+# For now, we don't install KCC per se, we just apply the Memorystore CRD.
+kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/k8s-config-connector/refs/heads/master/crds/memorystore_v1alpha1_memorystoreinstance.yaml
 
-echo "✅ KCC successfully deployed"
+echo "✅ KCC's Memorystore CRD successfully deployed"
 
 echo ""
-echo "✅ Setup complete: Gateway API, NGINX Gateway Fabric, kro and KCC are installed."
+echo "✅ Setup complete: Gateway API, NGINX Gateway Fabric and kro are installed."
 echo ""
