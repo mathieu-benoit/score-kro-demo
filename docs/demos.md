@@ -170,6 +170,10 @@ git push
 
 ## Demo #4 - Score - Docker Compose
 
+What if you want:
+- to guarantee that your containers are successfully running with their dependencies before deploying them to Kubernetes?
+- to run and test your containers and their dependencies locally?
+
 <img src="../images/demo-4-docker-compose.png" alt="rounded image" width="1000" style="border-radius:7%;" />
 
 ```bash
@@ -178,9 +182,9 @@ score-compose init \
     --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl \
 	--provisioners https://raw.githubusercontent.com/score-spec/community-provisioners/refs/heads/main/horizontal-pod-autoscaler/score-compose/10-hpa.provisioners.yaml
 
-score-compose generate podinfo/score.yaml \
+score-compose generate podinfo-with-redis/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
-    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score!"
+    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score, with Redis!"
 
 docker compose up --build -d
 ```
