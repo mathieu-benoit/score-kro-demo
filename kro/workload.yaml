@@ -415,4 +415,4 @@ spec:
           host: ${schema.metadata.name}-redis
           port: "6379"
           username: "default"
-          password: ""
+          password: "default"
