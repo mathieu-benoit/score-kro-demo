@@ -33,7 +33,6 @@ deploy-simple-compose:
 	score-compose generate simple/score.yaml \
 		--image ghcr.io/mathieu-benoit/my-sample-workload:latest
 	docker compose up --build -d
-	curl localhost:8080 -H "Host: $$(score-compose resources get-outputs dns.default#simple.dns --format '{{ .host }}')"
 
 ## Deploy simple/score.yaml to Kubernetes.
 .PHONY: deploy-simple
@@ -66,7 +65,6 @@ test-simple: deploy-simple
 		--for condition=Ready \
 		--timeout=90s
 	kubectl get workload,all,sa,httproute -n simple
-	curl localhost -H "Host: $$(score-k8s resources get-outputs dns.default#simple.dns --format '{{ .host }}')"
 
 ## Deploy podinfo/score.yaml to Docker Compose.
 .PHONY: deploy-podinfo-compose
