@@ -11,11 +11,11 @@ In the following demos, we gradually increase complexity to explore:
 TOC:
 - [Setup](#setup)
 - Kro
-  - [Demo #1 - FIXME]()
-  - [Demo #1 - FIXME]()
+  - [Demo #1 - Abstraction from the Dev]()
+  - [Demo #2 - Standardization Infra - Redis]()
 - Score
-  - [Demo #3 - FIXME]()
-  - [Demo #4 - Score and Docker Compose](#demo-4---score---docker-compose)
+  - [Demo #3 - One level up more for the abstaction]()
+  - [Demo #4 - Close the gap between inner and outer loops](#demo-4---score---docker-compose)
 
 ## Setup
 
@@ -33,7 +33,7 @@ kubectl apply -f kro/workload.yaml
 kubectl apply -f apps/gen-man-by-dev-podinfo.yaml
 ```
 
-## Demo #1 - KRO - FIXME Compose Kubernetes Native Resources
+## Demo #1 - KRO - Abstraction from the Dev
 
 Why KRO?
 KRO is the new kid on the block and a promising tool not only to simplify Kubernetes resource management but also to provide a higher level of abstraction for developers to consume infrastructure resources. We found a few introductions to KRO, but nothing that goes beyond the basics.
@@ -125,7 +125,7 @@ FIXME
 But as cool as KRO is, it still has limitations — which we covered in [Lessons learned with Kro](./lessons-learned-with-kro.md).
 To overcome these limitations, we need to add another layer of abstraction.
 
-## Demo #3 - Score - FIXME
+## Demo #3 - Score - One level up more for the abstaction
 
 What if you want:
 - to inject named env vars based on `redis`, etc.'s outputs?
@@ -168,7 +168,7 @@ kubectl apply -f apps/gen-by-score-podinfo.yaml
 git push
 ```
 
-## Demo #4 - Score - Docker Compose
+## Demo #4 - Score - Close the gap between inner and outer loops
 
 What if you want:
 - to guarantee that your containers are successfully running with their dependencies before deploying them to Kubernetes?
