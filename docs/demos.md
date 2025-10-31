@@ -118,14 +118,13 @@ spec:
         - --cache-server=tcp://FIXME # ENABLE CACHE
 ```
 
-FIXME
-
-- Limitation: How to point out to the redis cache server before it is created? (FIXME)
-
-But as cool as KRO is, it still has limitations — which we covered in [Lessons learned with Kro](./lessons-learned-with-kro.md).
-To overcome these limitations, we need to add another layer of abstraction.
+But question here: How to point out to the redis cache server before it is created?
 
 ## Demo #3 - Score - One level up more for the abstaction
+
+FIXME --> make it outcome more than solution
+
+--> "more genericity and scalability"
 
 What if you want:
 - to inject named env vars based on `redis`, etc.'s outputs?
@@ -191,6 +190,11 @@ docker compose up --build -d
 
 
 ## Conclusion
+
+FIXME
+
+But as cool as KRO is, it still has limitations — which we covered in [Lessons learned with Kro](./lessons-learned-with-kro.md).
+To overcome these limitations, we need to add another layer of abstraction.
 
 As you can hopefully see, abstractions are not bad by default.
 Tools like KRO can provide great value when used correctly, but you will run into limitations sooner or later.
