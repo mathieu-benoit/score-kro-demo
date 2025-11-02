@@ -1,21 +1,15 @@
----
-apiVersion: v1
-kind: Namespace
-metadata:
-    labels:
-        app.kubernetes.io/managed-by: developer
-        pod-security.kubernetes.io/enforce: restricted
-    name: podinfo-kro
----
 apiVersion: kro.run/v1alpha1
 kind: Workload
 metadata:
-    name: podinfo-kro
-    namespace: podinfo-kro
+    name: podinfo-kro-minimal-setup
+    namespace: default
 spec:
-    command:
-        - ./podinfo
-    env:
-        - name: PODINFO_UI_COLOR
-          value: '#34577c'
     image: ghcr.io/stefanprodan/podinfo:6.9.2
+    livenessProbe:
+        httpGet:
+            path: /healthz
+            port: 9898
+    readinessProbe:
+        httpGet:
+            path: /readyz
+            port: 9898
