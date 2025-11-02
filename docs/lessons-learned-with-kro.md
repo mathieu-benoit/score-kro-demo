@@ -1,6 +1,7 @@
-# Lessons learned with Kro
+# Lessons learned with Kro - WIP
 
 We explored KRO because we liked the concept, but we quickly found that its basic approach didnâ€™t fit our day-to-day needs as engineers. As discussed in the Reddit thread, many teams with advanced requirements hit similar limitations.
+If we are speaking of limitations here, we are meaning not that you are not able to solve it with KRO, but we don't found a good and clean way to solve it with KRO only. And the most limitations are based on the version 0.4.* and 0.5.*.
 
 Our goal:
 Provide developers a simple way to deploy applications using a predefined `CustomResource` designed by platform engineers, following best practices.
@@ -10,12 +11,17 @@ You can easily predefine standard configurations (resource limits, probes, secur
 We collected our learnings below.
 
 TOC:
-- [Lessons learned with Kro](#lessons-learned-with-kro)
+- [Lessons learned with Kro - WIP](#lessons-learned-with-kro---wip)
     - [Generic Type Limitations](#generic-type-limitations)
   - [Complex types limitations](#complex-types-limitations)
   - [Namespace Limitations](#namespace-limitations)
   - [Day-2 Operations Limitations](#day-2-operations-limitations)
-  - [A new attack surface? FIXME](#a-new-attack-surface-fixme)
+  - [Other Limitations we found out during our experiments - FIXME](#other-limitations-we-found-out-during-our-experiments---fixme)
+    - [Use Case share redis between 2 workloads (6)](#use-case-share-redis-between-2-workloads-6)
+    - [Multiple routes or databases (e.g. 2+ route, 2+ redis, redis + postgres + mysql) (3,4,5):](#multiple-routes-or-databases-eg-2-route-2-redis-redis--postgres--mysql-345)
+    - [Injection of named environment variables (redis, etc.) (1):](#injection-of-named-environment-variables-redis-etc-1)
+    - [Dynamic generation of names, passwords, etc. (2):](#dynamic-generation-of-names-passwords-etc-2)
+  - [A new attack surface?](#a-new-attack-surface)
   - [Is KRO mature enough for production?](#is-kro-mature-enough-for-production)
   - [Improvement Ideas for KRO](#improvement-ideas-for-kro)
 
@@ -140,7 +146,85 @@ You can version the RGD, but without an upgrade process, migration is painful â€
 
 Using Score can help here, thanks to templating, versioning, and validation, but that also means skipping KRO entirely.
 
-## A new attack surface? FIXME
+
+## Other Limitations we found out during our experiments - FIXME
+
+What if you want:
+- (1) to inject named env vars based on `redis`, etc.'s outputs?
+- (2) to dynamically generate names, passwords, etc.?
+- (3) 2+ `route`?
+- (4) 2+ `redis`?
+- (5) 1 `redis` + 1 `posgres` + 1 `mysql`?
+- (6) shared `redis` between 2 workloads?
+- (7)in-cluster in development, but GCP Memorystore in staging and production?
+
+
+
+
+
+### Use Case share redis between 2 workloads (6)
+
+Shared redis between 2 workloads: RGDs are primarily designed for managing an application resource group. Sharing a resource between two workloads requires that the RGD supports external references and correctly manages shared usage across different instances, an area that is still being developed.
+
+### Multiple routes or databases (e.g. 2+ route, 2+ redis, redis + postgres + mysql) (3,4,5):
+
+The ResourceGraphDefinition (RGD) serves as a blueprint for grouping resources. Defining multiple instances of the same or different resource types (like multiple databases) in a single RGD requires clean design of the RGD schema fields and templates to correctly map repetitions and dependencies.
+
+Future features like "Building Collections (with for loop-like support)" are on the roadmap to simplify the management of multiple similar resources.
+
+### Injection of named environment variables (redis, etc.) (1):
+
+Kro uses Common Expression Language (CEL) to automatically pass values between resources (e.g., an IP address or password from a redis instance to a deployment).
+This is a core feature, but the exact implementation for complex named injections requires careful configuration in the RGD.
+
+So etwas wie:
+
+```yaml
+apiVersion: kro.run/v1alpha1
+kind: Workload
+metadata:
+    name: podinfo-kro
+    namespace: podinfo-kro
+spec:
+    memorystoreRedis: true #ENABLE GCP REDIS FIXME
+    args:
+        - --port=9898
+        - --cert-path=/data/cert
+        - --port-metrics=9797
+        - --grpc-port=9999
+        - --grpc-service-name=podinfo
+        - --cache-server=tcp://FIXME # ENABLE CACHE
+```
+
+If we need the output of the redis instance that we create beforehand and then want to reference that output.
+We could inject it into the Args by default through CEL, but if the user can override it, then the default values won't be set.
+
+This means a new type like appArgs must be created in the workflow, which is then merged with the default args in the container in the RGD:
+
+**__Note:__** this should work out, didn't test it yet.
+
+```yaml
+containers:
+- name: podinfo
+  image: stefanprodan/podinfo:latest
+  args:
+    # 1. Start with the developer's arguments (from spec.appArgs)
+    - ${instance.spec.appArgs}
+
+    # 2. Add the MANDATORY critical cache argument
+    #    This is conditional on the enableCache field and uses the CEL output from Redis
+    - ${'--cache-server=' + resources.redisInstance.status.host}
+```
+
+As mentioned, it is possible, but it is not so intuitive and simple and requires quite a bit of prior knowledge about CEL, KRM, KRO and Kubernetes.
+
+
+### Dynamic generation of names, passwords, etc. (2):
+
+Kro supports value passing, which enables dynamic configuration. However, generating passwords or other dynamic values would likely need to happen through an underlying mechanism like Kubernetes Secrets or integration with a Secret Manager, making the configuration more complex.
+
+
+## A new attack surface?
 
 When many applications and infrastructure components are created from a single CustomResource definition based on an RGD, a small change to that RGD can have big consequences.
 
