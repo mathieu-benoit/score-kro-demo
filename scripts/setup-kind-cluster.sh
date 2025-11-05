@@ -15,7 +15,23 @@ EOF
 
 echo "✅ Kind cluster successfully created"
 
+# --- Install Metrics Server ---
+echo "⏳ Installing Metrics Server..."
+METRICS_SERVER_VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/metrics-server/releases/latest | jq -r .tag_name)
+
+kubectl apply -f "https://github.com/kubernetes-sigs/metrics-server/releases/download/${METRICS_SERVER_VERSION}/components.yaml"
+
+# Patch args for kind (no kubelet TLS + preferred address types)
+# (adds flags; safe to run multiple times)
+kubectl -n kube-system patch deploy metrics-server --type='json' -p='[
+  {"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"},
+  {"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}
+]' || true
+
+echo "✅ Metrics Server successfully deployed"
+
 # --- Install Gateway API + NGINX Gateway Fabric ---
+echo "⏳ Installing Gateway API..."
 GATEWAY_API_VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/gateway-api/releases/latest | jq -r .tag_name)
 kubectl apply \
     -f https://github.com/kubernetes-sigs/gateway-api/releases/download/${GATEWAY_API_VERSION}/standard-install.yaml
@@ -46,6 +62,7 @@ EOF
 echo "✅ Gateway API successfully deployed"
 
 # --- Install kro v0.5.1 (pinned version) ---
+echo "⏳ Installing Kro..."
 KRO_VERSION="0.5.1"
 
 helm upgrade kro oci://registry.k8s.io/kro/charts/kro \
@@ -58,6 +75,7 @@ echo "✅ Kro successfully deployed"
 
 # --- Install KCC ---
 # For now, we don't install KCC per se, we just apply the Memorystore (Redis) CRD needed to deploy our own Workload CR.
+echo "⏳ Installing KCC..."
 kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/k8s-config-connector/refs/heads/master/crds/redis_v1beta1_redisinstance.yaml
 
 echo "✅ KCC's Memorystore CRD successfully deployed"

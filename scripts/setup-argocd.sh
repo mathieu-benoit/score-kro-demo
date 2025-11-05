@@ -2,19 +2,6 @@
 set -o errexit
 set -o pipefail
 
-# --- Install Metrics Server ---
-echo "⏳ Installing Metrics Server..."
-METRICS_SERVER_VERSION=$(curl -sL https://api.github.com/repos/kubernetes-sigs/metrics-server/releases/latest | jq -r .tag_name)
-
-kubectl apply -f "https://github.com/kubernetes-sigs/metrics-server/releases/download/${METRICS_SERVER_VERSION}/components.yaml"
-
-# Patch args for kind (no kubelet TLS + preferred address types)
-# (adds flags; safe to run multiple times)
-kubectl -n kube-system patch deploy metrics-server --type='json' -p='[
-  {"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"},
-  {"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname"}
-]' || true
-
 # Helm repo (argo) + pinned chart version
 echo "⏳ Installing Argo CD..."
 helm repo add argo https://argoproj.github.io/argo-helm >/dev/null
