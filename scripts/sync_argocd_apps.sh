@@ -25,6 +25,7 @@ git add apps/
 # Commit only if there are changes
 if ! git diff --cached --quiet; then
   git commit -m "Sync ArgoCD apps for: ${COMMIT_MSG}"
+  git push origin main
 else
   echo "No changes detected in apps/ — skipping commit."
 fi
