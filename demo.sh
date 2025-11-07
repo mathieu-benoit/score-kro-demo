@@ -42,14 +42,14 @@ pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup-gcp.yaml"
 # Demo #3
 pe "echo \"Demo #3 - Extend Abstraction with Flexibility with Kro & Score\""
 pe "code images/demo-2.png"
-pe "code podinfo-with-redis/score.yaml"
+pe "code podinfo-with-redis/score-minimal.yaml"
+pe "code score-k8s/kro-workload-patch-template.tpl"
 pe "score-k8s init \
     --no-sample \
     --no-default-provisioners \
     --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
     --patch-templates ./score-k8s/kro-workload-patch-template.tpl \
     --provisioners ./score-k8s/kro-provisioners.yaml"
-pe "code podinfo-with-redis/score-minimal.yaml"
 pe "score-k8s generate podinfo/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
     --namespace podinfo-score \
