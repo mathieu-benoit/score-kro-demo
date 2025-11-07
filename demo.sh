@@ -23,7 +23,7 @@ pe "code podinfo/gen-man-by-dev-podinfo-minimal-setup.yaml"
 pe "code images/demo-0.png" #current version
 cp podinfo/gen-man-by-dev-podinfo.yaml apps/gen-man-by-dev-podinfo.yaml
 pe "echo \"GitOps Deployment - Demo 1\""
-./scripts/sync_argocd_apps.sh demo-1 >/dev/null 2>&1""
+./scripts/sync_argocd_apps.sh demo-1 >/dev/null 2>&1
 pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
 
 # Demo #2
@@ -32,7 +32,7 @@ pe "code images/demo-2-redis-in-cluster.png"
 pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup.yaml"
 cp podinfo-with-redis/gen-man-by-dev-podinfo-redis.yaml apps/gen-man-by-dev-podinfo.yaml
 pe "echo \"GitOps Deployment - Demo 2\""
-./scripts/sync_argocd_apps.sh demo-2 >/dev/null 2>&1""
+./scripts/sync_argocd_apps.sh demo-2 >/dev/null 2>&1
 pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
 pe "echo \"What about Redis outside of the cluster, hosted by a Cloud Provider for example?\""
 pe "code images/demo-2-redis-in-gcp.png"
@@ -44,19 +44,20 @@ pe "echo \"Demo #3 - Extend Abstraction with Flexibility with Kro & Score\""
 pe "code images/demo-2.png"
 pe "code podinfo-with-redis/score-minimal.yaml"
 pe "code score-k8s/kro-workload-patch-template.tpl"
-pe "score-k8s init \
+score-k8s init \
     --no-sample \
     --no-default-provisioners \
     --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-k8s/namespace-pss-restricted.tpl \
     --patch-templates ./score-k8s/kro-workload-patch-template.tpl \
-    --provisioners ./score-k8s/kro-provisioners.yaml"
+    --provisioners ./score-k8s/kro-provisioners.yaml >/dev/null 2>&1
 pe "score-k8s generate podinfo/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
     --namespace podinfo-score \
     --generate-namespace \
     --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE=\"Hello, from ArgoCD, Kro and Score\" \
     --output apps/gen-by-score-podinfo.yaml"
-pe "./scripts/sync_argocd_apps.sh demo-3"
+pe "echo \"GitOps Deployment - Demo 3\""
+./scripts/sync_argocd_apps.sh demo-3 >/dev/null 2>&1
 
 # Demo #4
 pe "echo \"Demo #4 - Bridging Inner and Outer Loops - Score with Docker Compose\""
