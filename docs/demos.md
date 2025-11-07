@@ -47,8 +47,9 @@ You can simulate this by copying the example CR from the `podinfo` demo:
 
 ```bash
 cp podinfo/gen-man-by-dev-podinfo.yaml apps/gen-man-by-dev-podinfo.yaml
-git push FIXME
-./scripts/sync_argocd_apps.sh
+
+
+./scripts/sync_argocd_apps.sh demo-1
 ```
 
 Take a look at:
@@ -87,9 +88,9 @@ spec:
 ```
 
 ```bash
-cp FIXME
-git push FIXME
-./scripts/sync_argocd_apps.sh
+cp podinfo-with-redis/gen-man-by-dev-podinfo-redis.yaml apps/gen-man-by-dev-podinfo.yaml
+
+./scripts/sync_argocd_apps.sh demo-2
 ```
 
 What about Redis outside of the cluster, hosted by a Cloud Provider for example?
@@ -148,16 +149,14 @@ score-k8s init \
 
 score-k8s generate podinfo/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
-    --namespace podinfo \
+    --namespace podinfo-score \
     --generate-namespace \
-    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from ArgoCD, Kro and Score!" \
+    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from ArgoCD, Kro and Score" \
     --output apps/gen-by-score-podinfo.yaml
 ```
 
 ```bash
-FIXME
-cp FIXME
-git push FIXME
+./scripts/sync_argocd_apps.sh demo-3
 ```
 
 Take a look at:
@@ -183,7 +182,7 @@ score-compose init \
 
 score-compose generate podinfo-with-redis/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
-    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score, with Redis!"
+    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score, with Redis"
 
 docker compose up --build -d
 ```
