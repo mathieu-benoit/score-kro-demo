@@ -1,0 +1,18 @@
+apiVersion: score.dev/v1b1
+metadata:
+  name: podinfo
+containers:
+  podinfo:
+    image: .
+    command:
+      - ./podinfo
+    args:
+      - --cache-server=tcp://$(REDIS_USER):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)
+    variables:
+      REDIS_HOST: ${resources.cache.host}
+      REDIS_PORT: ${resources.cache.port}
+      REDIS_USER: ${resources.cache.username}
+      REDIS_PASSWORD: ${resources.cache.password}
+resources:
+  cache:
+    type: redis

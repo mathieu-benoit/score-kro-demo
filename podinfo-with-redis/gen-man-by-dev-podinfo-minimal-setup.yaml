@@ -1,0 +1,16 @@
+apiVersion: kro.run/v1alpha1
+kind: Workload
+metadata:
+    name: podinfo-kro-minimal-setup
+spec:
+    image: ghcr.io/stefanprodan/podinfo:6.9.2
+    inClusterRedis: true #ENABLE
+    args:
+        - --cache-server=tcp://$(REDIS_HOST):$(REDIS_PORT) #ENABLE
+    command:
+        - ./podinfo
+    env:
+        - name: REDIS_HOST
+          value: podinfo-redis
+        - name: REDIS_PORT
+          value: "6379"
