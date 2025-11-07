@@ -7,3 +7,4 @@ manifests.yaml
 .env
 
 .DS_Store
+demo-magic.sh

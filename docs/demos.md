@@ -182,7 +182,7 @@ score-compose generate podinfo-with-redis/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
     --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from Compose and Score, with Redis"
 
-docker compose up --build -d
+docker compose up --build -d --wait
 ```
 
 That's it!
