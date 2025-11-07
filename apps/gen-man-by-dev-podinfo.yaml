@@ -13,12 +13,14 @@ metadata:
     name: podinfo-kro
     namespace: podinfo-kro
 spec:
+    inClusterRedis: true
     args:
         - --port=9898
         - --cert-path=/data/cert
         - --port-metrics=9797
         - --grpc-port=9999
         - --grpc-service-name=podinfo
+        - --cache-server=tcp://podinfo-redis:6379
         - --level=info
         - --random-delay=false
         - --random-error=false
