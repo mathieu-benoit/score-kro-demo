@@ -1,13 +1,55 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -o errexit
 set -o pipefail
+set -o nounset
 
+usage() {
+  echo "Usage: $0 \"<commit message>\""
+  echo "Example: $0 \"Upgrade foo-app to v1.2.3\""
+  exit 1
+}
+
+# Require exactly one argument
+if [[ $# -ne 1 ]]; then
+  usage
+fi
+
+COMMIT_MSG="$1"
+
+# Update main branch
+git pull --rebase origin main
+
+# Stage ArgoCD app changes
+git add apps/
+
+# Commit only if there are changes
+if ! git diff --cached --quiet; then
+  git commit -m "Sync ArgoCD apps for: ${COMMIT_MSG}"
+else
+  echo "No changes detected in apps/ — skipping commit."
+fi
+
+# Start port-forward in the background and clean up on exit
 kubectl -n argocd port-forward svc/argocd-server 8080:443 >/dev/null 2>&1 &
+PF_PID=$!
+cleanup() {
+  if ps -p "${PF_PID}" >/dev/null 2>&1; then
+    kill "${PF_PID}" >/dev/null 2>&1 || true
+  fi
+}
+trap cleanup EXIT
 
+# Wait for the port to become available (max ~10s)
+for _ in {1..20}; do
+  (echo >/dev/tcp/127.0.0.1/8080) >/dev/null 2>&1 && break
+  sleep 0.5
+done
+
+# Log in to ArgoCD
 argocd login localhost:8080 \
   --username admin \
   --password "$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 --decode)" \
   --insecure
 
-
+# Sync the app-of-apps
 argocd app sync argocd/app-of-apps
