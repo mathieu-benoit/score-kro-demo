@@ -153,9 +153,7 @@ score-k8s generate podinfo/score.yaml \
     --generate-namespace \
     --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE="Hello, from ArgoCD, Kro and Score" \
     --output apps/gen-by-score-podinfo.yaml
-```
 
-```bash
 ./scripts/sync_argocd_apps.sh demo-3
 ```
 

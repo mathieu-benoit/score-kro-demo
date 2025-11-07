@@ -37,4 +37,4 @@ argocd login localhost:8080 \
   --insecure
 
 # Sync the app-of-apps
-argocd app sync argocd/app-of-apps
+argocd app sync argocd/app-of-apps --prune
