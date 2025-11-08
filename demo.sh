@@ -13,40 +13,40 @@ clear
 kubectl apply -f kro/workload.yaml
 clear
 
-# # Demo #1
-# pe "echo \"Demo #1 - Developer Focus through Abstraction with Kro\""
-# pe "echo \"What is Kro?\""
-# pe "code images/kro-rgd.png"
-# pe "code images/setup-overview-0.png" #light version
-# pe "code -g kro/workload.yaml:1"
-# pe "code podinfo/gen-man-by-dev-podinfo-minimal-setup.yaml"
-# pe "code images/demo-01.png" #current version
-# cp podinfo/gen-man-by-dev-podinfo.yaml apps/gen-man-by-dev-podinfo.yaml
-# pe "echo \"GitOps Deployment - Demo 1\""
-# ./scripts/sync_argocd_apps.sh demo-1 >/dev/null 2>&1
-# pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
+# Demo #1
+pe "echo \"Demo #1 - Developer Focus through Abstraction with Kro\""
+pe "echo \"What is Kro?\""
+pe "code images/kro-rgd.png"
+pe "code images/setup-overview-0.png" #light version
+pe "code -g kro/workload.yaml:1"
+pe "code podinfo/gen-man-by-dev-podinfo-minimal-setup.yaml"
+pe "code images/demo-01.png" #current version
+cp podinfo/gen-man-by-dev-podinfo.yaml apps/gen-man-by-dev-podinfo.yaml
+pe "echo \"GitOps Deployment - Demo 1\""
+./scripts/sync_argocd_apps.sh demo-1 >/dev/null 2>&1
+pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
 
-# # Demo #2
-# pe "clear && echo \"Demo #2 - Platform Infra Standardization (Redis) with Kro\""
-# pe "code images/demo-2-redis-in-cluster-0.png"
-# pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup.yaml"
-# cp podinfo-with-redis/gen-man-by-dev-podinfo-redis.yaml apps/gen-man-by-dev-podinfo.yaml
-# pe "echo \"GitOps Deployment - Demo 2\""
-# ./scripts/sync_argocd_apps.sh demo-2 >/dev/null 2>&1
-# pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
-# pe "clear && echo \"What about Redis outside of the cluster, hosted by a Cloud Provider for example?\""
-# pe "code images/demo-2-redis-in-gcp-0.png"
-# pe "code -g kro/workload.yaml:421"
-# pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup-gcp.yaml"
+# Demo #2
+pe "clear && echo \"Demo #2 - Platform Infra Standardization (Redis) with Kro\""
+pe "code images/demo-2-redis-in-cluster-0.png"
+pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup.yaml"
+cp podinfo-with-redis/gen-man-by-dev-podinfo-redis.yaml apps/gen-man-by-dev-podinfo.yaml
+pe "echo \"GitOps Deployment - Demo 2\""
+./scripts/sync_argocd_apps.sh demo-2 >/dev/null 2>&1
+pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
+pe "clear && echo \"What about Redis outside of the cluster, hosted by a Cloud Provider for example?\""
+pe "code images/demo-2-redis-in-gcp-0.png"
+pe "code -g kro/workload.yaml:421"
+pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup-gcp.yaml"
 
-# pe "clear && echo \"What are our opportunities from here?\""
+pe "clear && echo \"What are our opportunities from here?\""
 
 # Demo #3
-# pe "clear && echo \"Demo #3 - Extend Abstraction with Flexibility with Kro & Score\""
-# pe "echo \"What is Score?\""
-# pe "code images/score-intro.png"
-# pe "code images/demo-3-kro-with-score.png"
-# pe "code podinfo-with-redis/score-minimal.yaml"
+pe "clear && echo \"Demo #3 - Extend Abstraction with Flexibility with Kro & Score\""
+pe "echo \"What is Score?\""
+pe "code images/score-intro.png"
+pe "code images/demo-3-kro-with-score.png"
+pe "code podinfo-with-redis/score-minimal.yaml"
 pe "code score-k8s/kro-workload-patch-template.tpl"
 score-k8s init \
     --no-sample \
