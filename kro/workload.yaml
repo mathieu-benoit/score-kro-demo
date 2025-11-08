@@ -443,6 +443,6 @@ spec:
           name: ${schema.metadata.name}-memorystore-outputs
         stringData:
           host: ${memorystore.status.host}
-          port: ${memorystore.status.port}
+          port: ${string(memorystore.status.port)}
           username: "default"
           password: ${memorystore.status.observedState.authString}
