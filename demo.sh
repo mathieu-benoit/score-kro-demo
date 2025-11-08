@@ -58,6 +58,7 @@ pe "score-k8s generate podinfo/score.yaml \
     --output apps/gen-by-score-podinfo.yaml"
 pe "echo \"GitOps Deployment - Demo 3\""
 ./scripts/sync_argocd_apps.sh demo-3 >/dev/null 2>&1
+pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-score"
 
 # Demo #4
 pe "echo \"Demo #4 - Bridging Inner and Outer Loops - Score with Docker Compose\""
@@ -70,3 +71,4 @@ pe "score-compose generate podinfo-with-redis/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
     --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE=\"Hello, from Compose and Score, with Redis\""
 pe "docker compose up --build -d --wait"
+pe "echo \"Thank You!! Cloud_Native Rejekts <3\""

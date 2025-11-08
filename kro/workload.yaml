@@ -34,8 +34,8 @@ spec:
       hpa:
         minReplicas: integer | minimum=1
         maxReplicas: integer | minimum=1
-        targetCPUUtilization: integer | minimum=1 maximum=100
-        targetMemoryUtilization: integer | minimum=1 maximum=100
+        targetCPUUtilization: integer | default=50 minimum=1 maximum=100
+        targetMemoryUtilization: integer | default=50 minimum=1 maximum=100
 
       route:
         host: string | required=true
