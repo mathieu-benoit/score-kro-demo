@@ -27,7 +27,7 @@ pe "echo \"GitOps Deployment - Demo 1\""
 pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
 
 # Demo #2
-pe "echo \"Demo #2 - Platform Infra Standardization (Redis) with Kro\""
+pe "clear && echo \"Demo #2 - Platform Infra Standardization (Redis) with Kro\""
 pe "code images/demo-2-redis-in-cluster-0.png"
 pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup.yaml"
 cp podinfo-with-redis/gen-man-by-dev-podinfo-redis.yaml apps/gen-man-by-dev-podinfo.yaml
@@ -40,7 +40,7 @@ pe "code -g kro/workload.yaml:421"
 pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup-gcp.yaml"
 
 # Demo #3
-pe "echo \"Demo #3 - Extend Abstraction with Flexibility with Kro & Score\""
+pe "clear && echo \"Demo #3 - Extend Abstraction with Flexibility with Kro & Score\""
 pe "code images/demo-3-kro-with-score.png"
 pe "code podinfo-with-redis/score-minimal.yaml"
 pe "code score-k8s/kro-workload-patch-template.tpl"
@@ -61,7 +61,7 @@ pe "echo \"GitOps Deployment - Demo 3\""
 pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-score"
 
 # Demo #4
-pe "echo \"Demo #4 - Bridging Inner and Outer Loops - Score with Docker Compose\""
+pe "clear && echo \"Demo #4 - Bridging Inner and Outer Loops - Score with Docker Compose\""
 pe "code images/demo-4-score-docker-compose.png"
 pe "score-compose init \
     --no-sample \
@@ -71,4 +71,5 @@ pe "score-compose generate podinfo-with-redis/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
     --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE=\"Hello, from Compose and Score, with Redis\""
 pe "docker compose up --build -d --wait"
-pe "echo \"Thank You!! Cloud_Native Rejekts <3\""
+
+pe "clear && echo \"Thank You!! Cloud_Native Rejekts <3\""
