@@ -24,7 +24,7 @@ pe "code images/demo-01.png" #current version
 cp podinfo/gen-man-by-dev-podinfo.yaml apps/gen-man-by-dev-podinfo.yaml
 pe "echo \"GitOps Deployment - Demo 1\""
 ./scripts/sync_argocd_apps.sh demo-1 >/dev/null 2>&1
-pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
+pe "kubectl get workload,all,netpol,sa -n podinfo-kro"
 
 # Demo #2
 pe "clear && echo \"Demo #2 - Platform Infra Standardization (Redis) with Kro\""
@@ -33,7 +33,7 @@ pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup.yaml"
 cp podinfo-with-redis/gen-man-by-dev-podinfo-redis.yaml apps/gen-man-by-dev-podinfo.yaml
 pe "echo \"GitOps Deployment - Demo 2\""
 ./scripts/sync_argocd_apps.sh demo-2 >/dev/null 2>&1
-pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-kro"
+pe "kubectl get workload,all,netpol,sa -n podinfo-kro"
 pe "clear && echo \"What about Redis outside of the cluster, hosted by a Cloud Provider for example?\""
 pe "code images/demo-2-redis-in-gcp-0.png"
 pe "code -g kro/workload.yaml:421"
@@ -62,7 +62,7 @@ pe "score-k8s generate podinfo-with-redis/score.yaml \
 pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup-score.yaml"
 pe "echo \"GitOps Deployment - Demo 3\""
 ./scripts/sync_argocd_apps.sh demo-3 >/dev/null 2>&1
-pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-score"
+pe "kubectl get workload,all,netpol,sa -n podinfo-score"
 
 # Demo #4
 pe "clear && echo \"Demo #4 - Bridging Inner and Outer Loops - Score with Docker Compose\""

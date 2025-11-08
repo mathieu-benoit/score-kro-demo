@@ -50,11 +50,6 @@ spec:
             secretKeyRef:
                 key: username
                 name: podinfo-redis-outputs
-    hpa:
-        maxReplicas: 4
-        minReplicas: 1
-        targetCPUUtilization: 70
-        targetMemoryUtilization: 80
     image: ghcr.io/stefanprodan/podinfo:6.9.2
     inClusterRedis: true
     livenessProbe:
