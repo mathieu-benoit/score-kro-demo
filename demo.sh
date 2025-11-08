@@ -41,6 +41,9 @@ pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup-gcp.yaml"
 
 # Demo #3
 pe "clear && echo \"Demo #3 - Extend Abstraction with Flexibility with Kro & Score\""
+pe "echo \"What are our opportunities from here?\""
+pe "echo \"What is Score?\""
+pe "code images/score-intro.png"
 pe "code images/demo-3-kro-with-score.png"
 pe "code podinfo-with-redis/score-minimal.yaml"
 pe "code score-k8s/kro-workload-patch-template.tpl"
@@ -54,7 +57,6 @@ pe "score-k8s generate podinfo/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
     --namespace podinfo-score \
     --generate-namespace \
-    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE=\"Hello, from ArgoCD, Kro and Score\" \
     --output apps/gen-by-score-podinfo.yaml"
 pe "echo \"GitOps Deployment - Demo 3\""
 ./scripts/sync_argocd_apps.sh demo-3 >/dev/null 2>&1
@@ -63,13 +65,13 @@ pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-score"
 # Demo #4
 pe "clear && echo \"Demo #4 - Bridging Inner and Outer Loops - Score with Docker Compose\""
 pe "code images/demo-4-score-docker-compose.png"
-pe "score-compose init \
+pe "code podinfo-with-redis/score-minimal.yaml"
+score-compose init \
     --no-sample \
     --patch-templates https://raw.githubusercontent.com/score-spec/community-patchers/refs/heads/main/score-compose/unprivileged.tpl \
-	--provisioners https://raw.githubusercontent.com/score-spec/community-provisioners/refs/heads/main/horizontal-pod-autoscaler/score-compose/10-hpa.provisioners.yaml"
+	--provisioners https://raw.githubusercontent.com/score-spec/community-provisioners/refs/heads/main/horizontal-pod-autoscaler/score-compose/10-hpa.provisioners.yaml >/dev/null 2>&1
 pe "score-compose generate podinfo-with-redis/score.yaml \
     --image ghcr.io/stefanprodan/podinfo:6.9.2 \
-    --override-property containers.podinfo.variables.PODINFO_UI_MESSAGE=\"Hello, from Compose and Score, with Redis\""
 pe "docker compose up --build -d --wait"
 
 pe "clear && echo \"Thank You!! Cloud_Native Rejekts <3\""
