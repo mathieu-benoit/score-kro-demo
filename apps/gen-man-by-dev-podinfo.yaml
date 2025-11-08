@@ -29,7 +29,10 @@ spec:
     command:
         - ./podinfo
     hpa:
-        minReplicas: 1
+        minReplicas: 2
+        maxReplicas: 5
+        targetCPUUtilization: 50
+        targetMemoryUtilization: 50
     env:
         - name: PODINFO_UI_COLOR
           value: '#34577c'
