@@ -22,6 +22,7 @@ spec:
         - --level=info
         - --random-delay=false
         - --random-error=false
+        - --cache-server=tcp://$(REDIS_USER):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)
     command:
         - ./podinfo
     env:
@@ -29,12 +30,33 @@ spec:
           value: null
         - name: PODINFO_UI_MESSAGE
           value: null
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+                key: host
+                name: podinfo-redis-outputs
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                key: password
+                name: podinfo-redis-outputs
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+                key: port
+                name: podinfo-redis-outputs
+        - name: REDIS_USER
+          valueFrom:
+            secretKeyRef:
+                key: username
+                name: podinfo-redis-outputs
     hpa:
         maxReplicas: 4
         minReplicas: 1
         targetCPUUtilization: 70
         targetMemoryUtilization: 80
     image: ghcr.io/stefanprodan/podinfo:6.9.2
+    inClusterRedis: true
     livenessProbe:
         httpGet:
             path: /healthz
@@ -51,7 +73,7 @@ spec:
             cpu: 100m
             memory: 128Mi
     route:
-        host: dns7nqw1y.localhost
+        host: dns7vz4wx.localhost
         path: /
         port: 9898
     service:
