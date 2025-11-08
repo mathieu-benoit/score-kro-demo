@@ -417,7 +417,7 @@ spec:
           port: "6379"
           username: "default"
           password: "default"
-    
+
     - id: memorystore
       includeWhen:
         - ${schema.spec.memorystoreRedis}

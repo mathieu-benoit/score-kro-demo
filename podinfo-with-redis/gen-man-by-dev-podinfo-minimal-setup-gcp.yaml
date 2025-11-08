@@ -4,16 +4,16 @@ metadata:
     name: podinfo-kro-minimal-setup
 spec:
     image: ghcr.io/stefanprodan/podinfo:6.9.2
-    memorystoreRedis: true #ENABLE GCP REDIS FIXME
+    memorystoreRedis: true #ENABLE GCP REDIS
     args:
         - --cache-server=tcp://$(REDIS_HOST):$(REDIS_PORT) #ENABLE
     command:
         - ./podinfo
     env:
         - name: REDIS_HOST
-          valueFrom: #ENABLE GCP REDIS FIXME
+          valueFrom: #ENABLE GCP REDIS
             secretKeyRef:
               name: podinfo-redis-gcp-credentials
-              key: host
+              key: host #LOOK AT ME
         - name: REDIS_PORT
           value: "6379"

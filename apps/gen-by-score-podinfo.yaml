@@ -1,0 +1,87 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    labels:
+        app.kubernetes.io/managed-by: score-k8s
+        pod-security.kubernetes.io/enforce: restricted
+    name: podinfo-score
+---
+apiVersion: kro.run/v1alpha1
+kind: Workload
+metadata:
+    name: podinfo
+    namespace: podinfo-score
+spec:
+    args:
+        - --port=9898
+        - --cert-path=/data/cert
+        - --port-metrics=9797
+        - --grpc-port=9999
+        - --grpc-service-name=podinfo
+        - --level=info
+        - --random-delay=false
+        - --random-error=false
+        - --cache-server=tcp://$(REDIS_USER):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)
+    command:
+        - ./podinfo
+    env:
+        - name: PODINFO_UI_COLOR
+          value: null
+        - name: PODINFO_UI_MESSAGE
+          value: null
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+                key: host
+                name: podinfo-redis-outputs
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                key: password
+                name: podinfo-redis-outputs
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+                key: port
+                name: podinfo-redis-outputs
+        - name: REDIS_USER
+          valueFrom:
+            secretKeyRef:
+                key: username
+                name: podinfo-redis-outputs
+    image: ghcr.io/stefanprodan/podinfo:6.9.2
+    inClusterRedis: true
+    livenessProbe:
+        httpGet:
+            path: /healthz
+            port: 9898
+    readinessProbe:
+        httpGet:
+            path: /readyz
+            port: 9898
+    resources:
+        limits:
+            cpu: 500m
+            memory: 512Mi
+        requests:
+            cpu: 100m
+            memory: 128Mi
+    route:
+        host: dns7vz4wx.localhost
+        path: /
+        port: 9898
+    service:
+        ports:
+            - name: grpc
+              port: 9999
+              protocol: TCP
+              targetPort: 9999
+            - name: http
+              port: 9898
+              protocol: TCP
+              targetPort: 9898
+            - name: http-metrics
+              port: 9797
+              protocol: TCP
+              targetPort: 9797

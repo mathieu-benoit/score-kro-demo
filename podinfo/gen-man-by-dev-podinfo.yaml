@@ -28,8 +28,6 @@ spec:
           verbs: ["get", "watch"]
     command:
         - ./podinfo
-    hpa:
-        minReplicas: 1
     env:
         - name: PODINFO_UI_COLOR
           value: '#34577c'

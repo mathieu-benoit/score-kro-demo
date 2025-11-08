@@ -48,12 +48,6 @@ containers:
         port: 9898
         path: /readyz
 resources:
-  hpa:
-    type: horizontal-pod-autoscaler
-    params:
-      minReplicas: 1
-      maxReplicas: 4
-      targetCPUUtilizationPercentage: 70
   dns:
     type: dns
   route:

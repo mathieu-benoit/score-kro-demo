@@ -1,0 +1,32 @@
+apiVersion: kro.run/v1alpha1
+kind: Workload
+metadata:
+    name: podinfo-kro-minimal-setup
+spec:
+    image: ghcr.io/stefanprodan/podinfo:6.9.2
+    inClusterRedis: true
+    args:
+        - --cache-server=tcp://$(REDIS_USER):$(REDIS_PASSWORD)@$(REDIS_HOST):$(REDIS_PORT)
+    command:
+        - ./podinfo
+    env:
+        - name: REDIS_HOST
+          valueFrom:
+            secretKeyRef:
+                key: host
+                name: podinfo-redis-outputs
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+                key: password
+                name: podinfo-redis-outputs
+        - name: REDIS_PORT
+          valueFrom:
+            secretKeyRef:
+                key: port
+                name: podinfo-redis-outputs
+        - name: REDIS_USER
+          valueFrom:
+            secretKeyRef:
+                key: username
+                name: podinfo-redis-outputs
