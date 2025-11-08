@@ -59,7 +59,7 @@ pe "score-k8s generate podinfo-with-redis/score.yaml \
     --namespace podinfo-score \
     --generate-namespace \
     --output apps/gen-by-score-podinfo.yaml"
-pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup.yaml"
+pe "code podinfo-with-redis/gen-man-by-dev-podinfo-minimal-setup-score.yaml"
 pe "echo \"GitOps Deployment - Demo 3\""
 ./scripts/sync_argocd_apps.sh demo-3 >/dev/null 2>&1
 pe "kubectl get workload,all,hpa,netpol,sa -n podinfo-score"
