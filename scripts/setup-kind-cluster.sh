@@ -61,9 +61,9 @@ EOF
 
 echo "✅ Gateway API successfully deployed"
 
-# --- Install kro v0.6.1 (pinned version) ---
+# --- Install kro v0.6.2 (pinned version) ---
 echo "⏳ Installing Kro..."
-KRO_VERSION="0.6.1"
+KRO_VERSION="0.6.2"
 
 helm upgrade kro oci://registry.k8s.io/kro/charts/kro \
   --namespace kro \
