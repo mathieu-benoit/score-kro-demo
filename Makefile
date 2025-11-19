@@ -53,7 +53,7 @@ deploy-simple: install-kro-workload
 test-simple: deploy-simple
 	kubectl wait workload simple \
 		-n simple \
-		--for condition=InstanceSynced \
+		--for condition=Ready \
 		--timeout=90s
 	kubectl wait deployments/simple \
 		-n simple \
@@ -100,7 +100,7 @@ deploy-podinfo: install-kro-workload
 test-podinfo: deploy-podinfo
 	kubectl wait workload podinfo \
 		-n podinfo \
-		--for condition=InstanceSynced \
+		--for condition=Ready \
 		--timeout=90s
 	kubectl wait deployments/podinfo \
 		-n podinfo \
@@ -148,7 +148,7 @@ deploy-redis: install-kro-workload
 test-redis: deploy-redis
 	kubectl wait workload podinfo \
 		-n redis \
-		--for condition=InstanceSynced \
+		--for condition=Ready \
 		--timeout=90s
 	kubectl wait deployments/podinfo-redis \
 		-n redis \
